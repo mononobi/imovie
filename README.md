@@ -1,6 +1,7 @@
-[this repository contains an old version of the app that backs to 6 years ago, and will no longer maintain by me, 
- I'm working on a new version of this app in a new repository, the new app UI will be 
- javascript based to be able to work on both linux and windows]
+# important
+this repository contains an old version of the app that backs to 6 years ago, and will no longer maintain by me, 
+I'm working on a new version of this app in a new repository, the new app UI will be 
+javascript based to be able to work on both linux and windows
 
 # iMovie
 Application for rapid and reliable movie collection management.
