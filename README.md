@@ -25,7 +25,12 @@ files and download movie details from internet.
 * you can give a copy of your application to a friend. then he/she can make a request list from your movies, and give the 
   generated list to you (it's a simple text file). then you load the list into your own application, and then automatically 
   copy all of those movies from your computer to an external device of your friend without worrying about the real physical 
-  location of the movies on your hard disk, sounds great? I think so. 
+  location of the movies on your hard disk, sounds great? I think so.
+  
+ * when your movie collection grows by time, it's possible that you've been having duplicate versions of the same movie.
+   iMovie lets you get a list of all duplicate movies and delete those ones that are not needed to free up space on your hard disk.
+   
+ * when viewing a movie details, iMovie shows you up to 20 relevant movies to that movie according to genres and IMDB rate.
 
 # running the application
 open the project in Visual Studio and build the solution in desired mode (Debug or Release).
