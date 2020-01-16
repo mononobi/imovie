@@ -31,6 +31,10 @@ files and download movie details from internet.
    iMovie lets you get a list of all duplicate movies and delete those ones that are not needed to free up space on your hard disk.
    
  * when viewing a movie details, iMovie shows you up to 20 relevant movies to that movie according to genres and IMDB rate.
+ 
+# notice
+the only thing that you have to notice to use this app, is to not rename each movie's folder name after you've archived 
+it using the app. otherwise, the link between the data stored in the app and the real movie will be lost and if you insert that movie again, it will be inserted without notice.
 
 # running the application
 open the project in Visual Studio and build the solution in desired mode (Debug or Release).
