@@ -109,7 +109,7 @@
             this.MaximizeBox = false;
             this.Name = "frmInsertSingleMovie";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "iMovie - Force Single Movie Insert";
+            this.Text = "Force Single Movie Insert";
             this.Load += new System.EventHandler(this.frmBatchMovie_Load);
             this.grpBatch.ResumeLayout(false);
             this.grpBatch.PerformLayout();

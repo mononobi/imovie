@@ -210,7 +210,7 @@
             this.Controls.Add(this.linkIMDB);
             this.Controls.Add(this.tab);
             this.Name = "frmPerson";
-            this.Text = "iMovie - Person";
+            this.Text = "Person";
             this.Load += new System.EventHandler(this.frmPerson_Load);
             this.Controls.SetChildIndex(this.tab, 0);
             this.Controls.SetChildIndex(this.linkIMDB, 0);

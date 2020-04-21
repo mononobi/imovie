@@ -70,7 +70,7 @@
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.Sizable;
             this.MaximizeBox = true;
             this.Name = "frmMovieList";
-            this.Text = "iMovie - Movie List";
+            this.Text = "Movie List";
             this.Load += new System.EventHandler(this.frmMovieList_Load);
             this.Controls.SetChildIndex(this.dgvMovie, 0);
             this.ResumeLayout(false);

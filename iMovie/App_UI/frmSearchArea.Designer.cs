@@ -798,7 +798,7 @@
             this.Controls.Add(this.btnView);
             this.Controls.Add(this.tabSuggest);
             this.Name = "frmSearchArea";
-            this.Text = "iMovie - Search Area";
+            this.Text = "Search Area";
             this.Load += new System.EventHandler(this.frmAdvancedSuggest_Load);
             this.Controls.SetChildIndex(this.tabSuggest, 0);
             this.Controls.SetChildIndex(this.btnView, 0);

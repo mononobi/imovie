@@ -68,7 +68,7 @@ namespace iMovie
 
                 // Form Title
 
-                this.Text = "iMovie - " + this.person.FullName;
+                this.Text = this.person.FullName;
 
                 // Summary
 

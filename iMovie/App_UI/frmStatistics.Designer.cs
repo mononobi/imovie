@@ -204,7 +204,7 @@
             this.MinimizeBox = false;
             this.Name = "frmStatistics";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "iMovie - Statistics";
+            this.Text = "Statistics";
             this.Load += new System.EventHandler(this.frmStatistics_Load);
             this.grpStat.ResumeLayout(false);
             this.ResumeLayout(false);

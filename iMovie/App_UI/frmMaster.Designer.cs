@@ -32,6 +32,7 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frmMaster));
             this.mnuStrip = new System.Windows.Forms.MenuStrip();
             this.mnuStripAdmin = new System.Windows.Forms.ToolStripMenuItem();
+            this.generateConfigFilesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.mnuStripClearCache = new System.Windows.Forms.ToolStripMenuItem();
             this.mnuStripClearAllMovie = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
@@ -46,6 +47,7 @@
             this.mnuStripView = new System.Windows.Forms.ToolStripMenuItem();
             this.mnuStripFavorite = new System.Windows.Forms.ToolStripMenuItem();
             this.mnuStripAllMovie = new System.Windows.Forms.ToolStripMenuItem();
+            this.mnuStripOfflineMovie = new System.Windows.Forms.ToolStripMenuItem();
             this.copyRequestListToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.mnuStripDuplicate = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator8 = new System.Windows.Forms.ToolStripSeparator();
@@ -85,7 +87,6 @@
             this.mnuContextVCD = new System.Windows.Forms.ToolStripMenuItem();
             this.mnuContextDelete = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.mnuContextDeleteItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.generateConfigFilesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.mnuStrip.SuspendLayout();
             this.mnuContextFavorite.SuspendLayout();
             this.mnuContextIsSeen.SuspendLayout();
@@ -122,6 +123,13 @@
             this.mnuStripAdmin.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Alt | System.Windows.Forms.Keys.A)));
             this.mnuStripAdmin.Size = new System.Drawing.Size(58, 20);
             this.mnuStripAdmin.Text = "ADMIN";
+            // 
+            // generateConfigFilesToolStripMenuItem
+            // 
+            this.generateConfigFilesToolStripMenuItem.Name = "generateConfigFilesToolStripMenuItem";
+            this.generateConfigFilesToolStripMenuItem.Size = new System.Drawing.Size(218, 22);
+            this.generateConfigFilesToolStripMenuItem.Text = "Generate Config Files";
+            this.generateConfigFilesToolStripMenuItem.Click += new System.EventHandler(this.generateConfigFilesToolStripMenuItem_Click);
             // 
             // mnuStripClearCache
             // 
@@ -164,7 +172,7 @@
             this.mnuStripRootPath});
             this.mnuStripInsert.Name = "mnuStripInsert";
             this.mnuStripInsert.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Alt | System.Windows.Forms.Keys.I)));
-            this.mnuStripInsert.Size = new System.Drawing.Size(57, 20);
+            this.mnuStripInsert.Size = new System.Drawing.Size(55, 20);
             this.mnuStripInsert.Text = "INSERT";
             // 
             // mnuStripMovie
@@ -210,6 +218,7 @@
             this.mnuStripView.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.mnuStripFavorite,
             this.mnuStripAllMovie,
+            this.mnuStripOfflineMovie,
             this.copyRequestListToolStripMenuItem,
             this.mnuStripDuplicate,
             this.toolStripSeparator8,
@@ -229,21 +238,28 @@
             // 
             this.mnuStripFavorite.Image = global::iMovie.Properties.Resources.menu_favorite;
             this.mnuStripFavorite.Name = "mnuStripFavorite";
-            this.mnuStripFavorite.Size = new System.Drawing.Size(217, 22);
+            this.mnuStripFavorite.Size = new System.Drawing.Size(218, 22);
             this.mnuStripFavorite.Text = "Favorite List";
             this.mnuStripFavorite.Click += new System.EventHandler(this.mnuStripFavorite_Click);
             // 
             // mnuStripAllMovie
             // 
             this.mnuStripAllMovie.Name = "mnuStripAllMovie";
-            this.mnuStripAllMovie.Size = new System.Drawing.Size(217, 22);
+            this.mnuStripAllMovie.Size = new System.Drawing.Size(218, 22);
             this.mnuStripAllMovie.Text = "All Movies List";
             this.mnuStripAllMovie.Click += new System.EventHandler(this.mnuStripAllMovie_Click);
+            // 
+            // mnuStripOfflineMovie
+            // 
+            this.mnuStripOfflineMovie.Name = "mnuStripOfflineMovie";
+            this.mnuStripOfflineMovie.Size = new System.Drawing.Size(218, 22);
+            this.mnuStripOfflineMovie.Text = "Offline Movies List";
+            this.mnuStripOfflineMovie.Click += new System.EventHandler(this.mnuStripOfflineMovie_Click);
             // 
             // copyRequestListToolStripMenuItem
             // 
             this.copyRequestListToolStripMenuItem.Name = "copyRequestListToolStripMenuItem";
-            this.copyRequestListToolStripMenuItem.Size = new System.Drawing.Size(217, 22);
+            this.copyRequestListToolStripMenuItem.Size = new System.Drawing.Size(218, 22);
             this.copyRequestListToolStripMenuItem.Text = "Copy Request List";
             this.copyRequestListToolStripMenuItem.Click += new System.EventHandler(this.copyRequestListToolStripMenuItem_Click);
             // 
@@ -251,52 +267,52 @@
             // 
             this.mnuStripDuplicate.Image = global::iMovie.Properties.Resources.duplicate_menu;
             this.mnuStripDuplicate.Name = "mnuStripDuplicate";
-            this.mnuStripDuplicate.Size = new System.Drawing.Size(217, 22);
+            this.mnuStripDuplicate.Size = new System.Drawing.Size(218, 22);
             this.mnuStripDuplicate.Text = "Duplicate Movies (Approx.)";
             this.mnuStripDuplicate.Click += new System.EventHandler(this.mnuStripDuplicate_Click);
             // 
             // toolStripSeparator8
             // 
             this.toolStripSeparator8.Name = "toolStripSeparator8";
-            this.toolStripSeparator8.Size = new System.Drawing.Size(214, 6);
+            this.toolStripSeparator8.Size = new System.Drawing.Size(215, 6);
             // 
             // mnuStripSearch
             // 
             this.mnuStripSearch.Image = global::iMovie.Properties.Resources.search;
             this.mnuStripSearch.Name = "mnuStripSearch";
-            this.mnuStripSearch.Size = new System.Drawing.Size(217, 22);
+            this.mnuStripSearch.Size = new System.Drawing.Size(218, 22);
             this.mnuStripSearch.Text = "Search Area";
             this.mnuStripSearch.Click += new System.EventHandler(this.mnuStripSearch_Click);
             // 
             // mnuStripMain
             // 
             this.mnuStripMain.Name = "mnuStripMain";
-            this.mnuStripMain.Size = new System.Drawing.Size(217, 22);
+            this.mnuStripMain.Size = new System.Drawing.Size(218, 22);
             this.mnuStripMain.Text = "Main Window";
             this.mnuStripMain.Click += new System.EventHandler(this.mnuStripMain_Click);
             // 
             // toolStripSeparator3
             // 
             this.toolStripSeparator3.Name = "toolStripSeparator3";
-            this.toolStripSeparator3.Size = new System.Drawing.Size(214, 6);
+            this.toolStripSeparator3.Size = new System.Drawing.Size(215, 6);
             // 
             // mnuStripQuick
             // 
             this.mnuStripQuick.Image = global::iMovie.Properties.Resources.menu_random;
             this.mnuStripQuick.Name = "mnuStripQuick";
-            this.mnuStripQuick.Size = new System.Drawing.Size(217, 22);
+            this.mnuStripQuick.Size = new System.Drawing.Size(218, 22);
             this.mnuStripQuick.Text = "Quick Suggestion";
             this.mnuStripQuick.Click += new System.EventHandler(this.mnuStripQuick_Click);
             // 
             // toolStripSeparator2
             // 
             this.toolStripSeparator2.Name = "toolStripSeparator2";
-            this.toolStripSeparator2.Size = new System.Drawing.Size(214, 6);
+            this.toolStripSeparator2.Size = new System.Drawing.Size(215, 6);
             // 
             // mnuStripReportConsole
             // 
             this.mnuStripReportConsole.Name = "mnuStripReportConsole";
-            this.mnuStripReportConsole.Size = new System.Drawing.Size(217, 22);
+            this.mnuStripReportConsole.Size = new System.Drawing.Size(218, 22);
             this.mnuStripReportConsole.Text = "SQL Report Console";
             this.mnuStripReportConsole.Click += new System.EventHandler(this.mnuStripReportConsole_Click);
             // 
@@ -304,7 +320,7 @@
             // 
             this.mnuStripStats.Image = global::iMovie.Properties.Resources.menu_stats;
             this.mnuStripStats.Name = "mnuStripStats";
-            this.mnuStripStats.Size = new System.Drawing.Size(217, 22);
+            this.mnuStripStats.Size = new System.Drawing.Size(218, 22);
             this.mnuStripStats.Text = "Statistics";
             this.mnuStripStats.Click += new System.EventHandler(this.mnuStripStats_Click);
             // 
@@ -322,14 +338,14 @@
             // 
             this.mnuStripGuide.Image = global::iMovie.Properties.Resources.menu_guide;
             this.mnuStripGuide.Name = "mnuStripGuide";
-            this.mnuStripGuide.Size = new System.Drawing.Size(152, 22);
+            this.mnuStripGuide.Size = new System.Drawing.Size(131, 22);
             this.mnuStripGuide.Text = "User Guide";
             // 
             // mnuStripAbout
             // 
             this.mnuStripAbout.Image = global::iMovie.Properties.Resources.menu_about;
             this.mnuStripAbout.Name = "mnuStripAbout";
-            this.mnuStripAbout.Size = new System.Drawing.Size(152, 22);
+            this.mnuStripAbout.Size = new System.Drawing.Size(131, 22);
             this.mnuStripAbout.Text = "About";
             this.mnuStripAbout.Click += new System.EventHandler(this.mnuStripAbout_Click);
             // 
@@ -510,13 +526,6 @@
             this.mnuContextDeleteItem.Size = new System.Drawing.Size(82, 22);
             this.mnuContextDeleteItem.Text = "Delete";
             // 
-            // generateConfigFilesToolStripMenuItem
-            // 
-            this.generateConfigFilesToolStripMenuItem.Name = "generateConfigFilesToolStripMenuItem";
-            this.generateConfigFilesToolStripMenuItem.Size = new System.Drawing.Size(218, 22);
-            this.generateConfigFilesToolStripMenuItem.Text = "Generate Config Files";
-            this.generateConfigFilesToolStripMenuItem.Click += new System.EventHandler(this.generateConfigFilesToolStripMenuItem_Click);
-            // 
             // frmMaster
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -599,6 +608,7 @@
         private System.Windows.Forms.ToolStripMenuItem copyRequestListToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem mnuStripReportConsole;
         protected System.Windows.Forms.ToolStripMenuItem generateConfigFilesToolStripMenuItem;
+        protected System.Windows.Forms.ToolStripMenuItem mnuStripOfflineMovie;
     }
 }
 

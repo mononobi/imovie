@@ -112,7 +112,7 @@
             this.MinimizeBox = false;
             this.Name = "frmAbout";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "iMovie - About";
+            this.Text = "About";
             this.Load += new System.EventHandler(this.frmAbout_Load);
             this.grpAbout.ResumeLayout(false);
             this.grpAbout.PerformLayout();

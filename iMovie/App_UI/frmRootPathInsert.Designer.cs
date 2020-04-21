@@ -127,7 +127,7 @@
             this.MaximizeBox = false;
             this.Name = "frmRootPathInsert";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "iMovie - Add Movie Root Path";
+            this.Text = "Add Movie Root Path";
             this.Load += new System.EventHandler(this.frmRootPathInsert_Load);
             this.mnuContextDelete.ResumeLayout(false);
             this.grpRootPath.ResumeLayout(false);

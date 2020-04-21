@@ -501,7 +501,7 @@
             this.Controls.Add(this.linkIMDB);
             this.Controls.Add(this.tab);
             this.Name = "frmMovie";
-            this.Text = "iMovie - Movie";
+            this.Text = "Movie";
             this.Load += new System.EventHandler(this.frmMovie_Load);
             this.Controls.SetChildIndex(this.tab, 0);
             this.Controls.SetChildIndex(this.linkIMDB, 0);

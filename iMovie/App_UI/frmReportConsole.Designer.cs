@@ -71,7 +71,7 @@
             this.Controls.Add(this.btnView);
             this.MaximizeBox = true;
             this.Name = "frmReportConsole";
-            this.Text = "iMovie - SQL Report Console";
+            this.Text = "SQL Report Console";
             this.Load += new System.EventHandler(this.frmReportConsole_Load);
             this.Controls.SetChildIndex(this.btnView, 0);
             this.Controls.SetChildIndex(this.txtSQL, 0);

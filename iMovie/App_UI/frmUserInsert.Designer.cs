@@ -200,7 +200,7 @@
             this.MaximizeBox = false;
             this.Name = "frmUserInsert";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "iMovie - Create User";
+            this.Text = "Create User";
             this.grpUser.ResumeLayout(false);
             this.grpUser.PerformLayout();
             this.ResumeLayout(false);

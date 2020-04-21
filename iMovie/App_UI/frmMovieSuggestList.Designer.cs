@@ -64,7 +64,7 @@
             this.Controls.Add(this.repMovie);
             this.Controls.Add(this.lblSuggested);
             this.Name = "frmMovieSuggestList";
-            this.Text = "iMovie - Suggestion List";
+            this.Text = "Suggestion List";
             this.Load += new System.EventHandler(this.frmMovieSuggestList_Load);
             this.Controls.SetChildIndex(this.lblSuggested, 0);
             this.Controls.SetChildIndex(this.repMovie, 0);

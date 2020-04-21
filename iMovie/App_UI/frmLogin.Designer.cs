@@ -111,7 +111,7 @@
             this.MaximizeBox = false;
             this.Name = "frmLogin";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "iMovie - Login";
+            this.Text = "Login";
             this.ResumeLayout(false);
             this.PerformLayout();
 

@@ -834,7 +834,7 @@
             this.Controls.Add(this.tabSuggest);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "frmAdvancedSuggest";
-            this.Text = "iMovie - Advanced Suggestion";
+            this.Text = "Advanced Suggestion";
             this.Load += new System.EventHandler(this.frmAdvancedSuggest_Load);
             this.Controls.SetChildIndex(this.tabSuggest, 0);
             this.Controls.SetChildIndex(this.btnView, 0);

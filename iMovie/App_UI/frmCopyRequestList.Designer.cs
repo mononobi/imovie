@@ -197,7 +197,7 @@
             this.MaximizeBox = false;
             this.Name = "frmCopyRequestList";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "iMovie - Copy Request List";
+            this.Text = "Copy Request List";
             this.mnuStrip.ResumeLayout(false);
             this.mnuStrip.PerformLayout();
             this.ResumeLayout(false);

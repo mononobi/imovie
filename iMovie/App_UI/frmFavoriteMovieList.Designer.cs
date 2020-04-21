@@ -53,7 +53,7 @@
             this.Controls.Add(this.repFavorite);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "frmFavoriteMovieList";
-            this.Text = "iMovie - Favorite Movies";
+            this.Text = "Favorite Movies";
             this.Load += new System.EventHandler(this.frmFavoriteMovieList_Load);
             this.Controls.SetChildIndex(this.repFavorite, 0);
             this.ResumeLayout(false);

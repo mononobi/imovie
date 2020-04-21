@@ -149,7 +149,7 @@
             this.MaximizeBox = false;
             this.Name = "frmBatchMovie";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "iMovie - Batch Movie Insert";
+            this.Text = "Batch Movie Insert";
             this.Load += new System.EventHandler(this.frmBatchMovie_Load);
             this.grpBatch.ResumeLayout(false);
             this.grpBatch.PerformLayout();

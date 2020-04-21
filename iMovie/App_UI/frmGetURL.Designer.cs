@@ -87,7 +87,7 @@
             this.MaximizeBox = false;
             this.Name = "frmGetURL";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "iMovie - Force Update From URL";
+            this.Text = "Force Update From URL";
             this.Load += new System.EventHandler(this.frmGetURL_Load);
             this.grpMessage.ResumeLayout(false);
             this.grpMessage.PerformLayout();

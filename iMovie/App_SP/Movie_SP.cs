@@ -969,6 +969,53 @@ namespace iMovie
             }
         }
 
+        public static DataTable GetOfflineList()
+        {
+            try
+            {
+                DataTable dtMovie = GetList(false);
+                DataTable result = new DataTable();
+                int i = 0;
+
+                foreach (DataColumn dc in dtMovie.Columns)
+                {
+                    result.Columns.Add(dc.ColumnName);
+                }
+
+                while (i < dtMovie.Rows.Count)
+                {
+                    string fileLink = dtMovie.Rows[i]["FileLink"].ToString();
+                    if (!MovieFileExists(fileLink))
+                    {
+                        result.ImportRow(dtMovie.Rows[i]);
+                    }
+
+                    i++;
+                }
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        public static bool MovieFileExists(string fileLink)
+        {
+            string root = string.Empty;
+            foreach (DataRow dr in iMovieBase.MovieRootPath.Rows)
+            {
+                root = dr["PathString"].ToString() + @"\";
+                if (Directory.Exists(root + fileLink) == true)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         public static DataSet GetDetailsByID(long movieID) 
         {
             try

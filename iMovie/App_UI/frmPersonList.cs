@@ -96,7 +96,7 @@ namespace iMovie
                     dgvPerson.DataGridView.Columns["dgvActorName"].Width = 164;
                     dgvPerson.IsActor = true;
                     dgvPerson.DefaultText = "Search Actors";
-                    this.Text = "iMovie - Actor List";
+                    this.Text = "Actor List";
                 }
                 else if (personType == "Director")
                 {
@@ -111,7 +111,7 @@ namespace iMovie
                     dgvPerson.DataGridView.Columns["dgvDirectorName"].Width = 164;
                     dgvPerson.IsDirector = true;
                     dgvPerson.DefaultText = "Search Directors";
-                    this.Text = "iMovie - Director List";
+                    this.Text = "Director List";
                 }
 
                 dgvPerson.DataSource = this.dtPersons;

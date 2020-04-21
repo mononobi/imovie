@@ -237,7 +237,7 @@
             this.Controls.Add(this.grpSuggest);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "frmMain";
-            this.Text = "iMovie - Main";
+            this.Text = "Main";
             this.Load += new System.EventHandler(this.frmMain_Load);
             this.Controls.SetChildIndex(this.grpSuggest, 0);
             this.Controls.SetChildIndex(this.grpPlace, 0);

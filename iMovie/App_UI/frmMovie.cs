@@ -300,7 +300,7 @@ namespace iMovie
 
                 // Form Title
 
-                this.Text = "iMovie - " + this.movie.FullTitle;
+                this.Text = this.movie.FullTitle;
 
                 // Summary
 

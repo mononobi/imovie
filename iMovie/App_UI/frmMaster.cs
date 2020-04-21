@@ -420,8 +420,6 @@ namespace iMovie
             {
                 DataTable dtAllMovie = new DataTable();
                 dtAllMovie = Movie_SP.GetList(false);
-                Movie[] movie = new Movie[0];
-                movie = Movie.FetchAllMovie(dtAllMovie);
 
                 if (FormManager.IsFormOpen(enForms.frmMovieList, null) == false)
                 {
@@ -456,7 +454,6 @@ namespace iMovie
                     if (FormManager.IsFormOpen(enForms.frmMovieList, null) == false)
                     {
                         frmMovieList movieList = new frmMovieList(dtDuplicate);
-
                         movieList.Show();
                     }
                     else
@@ -536,6 +533,38 @@ namespace iMovie
                 MessageBox.Show(Messages.ConfigsGenerated, Messages.MessageBoxTitle, MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             catch(Exception ex)
+            {
+                MessageBox.Show(ex.Message, Messages.MessageBoxTitle, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+        }
+
+        private void mnuStripOfflineMovie_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                DataTable dtAllMovie = new DataTable();
+                dtAllMovie = Movie_SP.GetOfflineList();
+
+                if (FormManager.IsFormOpen(enForms.frmMovieList, null) == false)
+                {
+                    frmMovieList movieTemp = new frmMovieList(dtAllMovie, "Offline Movie List");
+                    movieTemp.Show();
+                }
+                else
+                {
+                    foreach (Form frm in Application.OpenForms)
+                    {
+                        if (frm is frmMovieList)
+                        {
+                            frmMovieList availableForm = (frm as frmMovieList);
+                            availableForm.DataSource = dtAllMovie;
+                            availableForm.Text = "Offline Movie List";
+                            break;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
             {
                 MessageBox.Show(ex.Message, Messages.MessageBoxTitle, MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }

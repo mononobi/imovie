@@ -97,7 +97,7 @@
             this.Controls.Add(this.picPhoto);
             this.Controls.Add(this.dgvPerson);
             this.Name = "frmPersonList";
-            this.Text = "iMovie - Person List";
+            this.Text = "Person List";
             this.Load += new System.EventHandler(this.frmPersonList_Load);
             this.Controls.SetChildIndex(this.dgvPerson, 0);
             this.Controls.SetChildIndex(this.picPhoto, 0);

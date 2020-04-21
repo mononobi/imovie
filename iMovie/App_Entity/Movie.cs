@@ -992,17 +992,9 @@ namespace iMovie
             {
                 Movie[] movieTemp = new Movie[dtMovie.Rows.Count];
                 int i = 0;
-
                 while (i < dtMovie.Rows.Count)
                 {
                     movieTemp[i] = new Movie();
-                    i++;
-                }
-
-                i = 0;
-
-                while (i < dtMovie.Rows.Count)
-                {
                     if (dtMovie.Rows[i]["ProductYear"].ToString() == null ||
                         dtMovie.Rows[i]["ProductYear"].ToString() == "" ||
                         dtMovie.Rows[i]["ProductYear"].ToString() == "-" ||

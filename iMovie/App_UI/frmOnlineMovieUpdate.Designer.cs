@@ -292,7 +292,7 @@
             this.MaximizeBox = false;
             this.Name = "frmOnlineMovieUpdate";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "iMovie - Online Movie Update";
+            this.Text = "Online Movie Update";
             this.grpOptions.ResumeLayout(false);
             this.grpOptions.PerformLayout();
             this.ResumeLayout(false);
