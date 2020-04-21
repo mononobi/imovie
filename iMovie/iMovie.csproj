@@ -461,9 +461,9 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
-    <None Include="Runtime\App_Data\Fonts\Adorable.TTF" />
-    <None Include="Runtime\App_Data\Fonts\AllCaps.ttf" />
-    <None Include="Runtime\App_Data\Fonts\COPRGTB.TTF" />
+    <None Include="Runtime_Data\App_Data\Fonts\Adorable.TTF" />
+    <None Include="Runtime_Data\App_Data\Fonts\AllCaps.ttf" />
+    <None Include="Runtime_Data\App_Data\Fonts\COPRGTB.TTF" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
@@ -6914,9 +6914,9 @@
     <Content Include="Libs\Microsoft.VisualBasic.PowerPacks.Vs.dll" />
     <Content Include="Libs\NReco.VideoInfo.dll" />
     <Content Include="Libs\System.Data.SQLite.dll" />
-    <Content Include="Runtime\ffprobe.exe" />
-    <Content Include="Runtime\x64\SQLite.Interop.dll" />
-    <Content Include="Runtime\x86\SQLite.Interop.dll" />
+    <Content Include="Runtime_Libs\ffprobe.exe" />
+    <Content Include="Runtime_Libs\x64\SQLite.Interop.dll" />
+    <Content Include="Runtime_Libs\x86\SQLite.Interop.dll" />
   </ItemGroup>
   <ItemGroup>
     <COMReference Include="stdole">
@@ -6930,7 +6930,7 @@
     </COMReference>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Runtime\App_Data\Temp\" />
+    <Folder Include="Runtime_Data\App_Data\Temp\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
