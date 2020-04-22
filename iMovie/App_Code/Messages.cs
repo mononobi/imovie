@@ -7,7 +7,7 @@ namespace iMovie
 {
     public class Messages
     {
-        //Validation
+        // Validation
 
         public const string NotAvailable = "N/A"; 
 
