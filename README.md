@@ -3,12 +3,12 @@ Application for rapid and reliable movie collection management.
 iMovie is a personal movie collection manager, which can scan your computer for movies, identify movie 
 files and download movie details from internet.
 
-# important
+# Important
 this repository contains an old version of the app that backs to 6 years ago, and will no longer maintain by me, 
 I'm working on a new version of this app in a new repository, the new app UI will be 
 javascript based to be able to work on both linux and windows.
 
-# features
+# Features
 * it can scan your computer's hard disks for movie files, identify the movies automatically, and download all basic details about each       movie from internet, and creates a local database of your movies collection.
 
 * open the folder of the movie you desire, directly from the application. you no more need to waste time by 
@@ -37,10 +37,10 @@ javascript based to be able to work on both linux and windows.
    
  * when viewing a movie details, iMovie shows you up to 20 relevant movies to that movie according to genres and IMDB rate.
  
-# usage notice
+# Usage Notice
 the only thing that you have to notice to use this app, is to not rename each movie's folder name after you've archived 
 it using the app. otherwise, the link between the data stored in the app and the real movie will be lost and if you insert that movie again, it will be inserted without notice.
 
-# running the application
+# Running The Application
 open the project in Visual Studio and build the solution in desired mode (Debug or Release).
 to be able to run the application, you should copy 'iMovie/App_Data' folder into the runtime directory.
