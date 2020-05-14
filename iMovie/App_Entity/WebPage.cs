@@ -123,8 +123,9 @@ namespace iMovie
                     {
                         Regex reg1 = new Regex(@"^www.*");
                         Regex reg2 = new Regex(@"^http://.*");
+                        Regex reg3 = new Regex(@"^https://.*");
 
-                        if (reg2.IsMatch(value) == true)
+                        if (reg2.IsMatch(value) == true || reg3.IsMatch(value) == true)
                         {
                             // OK
                         }

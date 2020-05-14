@@ -14,13 +14,9 @@ namespace iMovie
         private string TitleResultTagPattern = @"<td[ ]*?class=""result_text"">[ ]*?<a[ ]*?href=""[^"" <>]*""[ ]*?>[^<>]*</a>[^""<>]*<";
         private string TitlePageReferenceTagPattern = @"href=""[^"" <>]*""";
         private string RateTagPattern = @"<span[ ]*?itemprop=""ratingValue"">[^""<>]*</span>";
-        private string ImageTagPattern = @"alt=""[^""<>]*[ ]*?Poster""[ ]*?title=""[^""<>]*[ ]*?Poster""[ ]*?src=""[^"" <>]*""[ ]*?itemprop=""image""[ ]*?/>";
         private string PhotoCoverTagPattern = @"src=""[^"" <>]*""";
         private string MinuteTagPattern = @"datetime=""PT[\d]+M""";
         private string YearTagPattern = @"(?<=<title>[^<>]*)([1|2]{1}[0|9]{1}[0-9]{2})(?=[^<>]*</title>)";
-        private string StoryTagPatternGeneral = @"(?<=<h2>Storyline</h2>[ ]*?<div[ ]*?class=""inline[ ]*?canwrap""[ ]*?itemprop=""description"">[ ]*?<p>[ ]*?)(.*)(?=</p>)";
-        private string HrefTagBegin = @"<a[^<>]*>";
-        private string HrefTagEnd = @"</a>";
         private string GenreTagPattern = @"(?<=<div[ ]*?class=""see-more[ ]*?inline[ ]*?canwrap""[ ]*?itemprop=""genre"">[ ]*?<h4[ ]*?class=""inline"">Genres:</h4>[ ]*?)(.*)(?=[ ]*?</div>)";
         private string GenreEachTagPattern = @"(?<=<a[^<>]*>)([^<>]*)(?=</a>)";
         private string DirectorsListPattern = @"<h4[ ]*?class=""inline"">Director[s]{0,1}:</h4>[ ]*?<span[ ]*?itemprop=""director""[ ]*?itemscope[ ]*?itemtype=""http://schema.org/Person"">[ ]*?(.*?)[ ]*?</span>[ ]*?</div>";
@@ -46,6 +42,9 @@ namespace iMovie
         private int minutes = 0;
         private string photoURL = "";
         private string storyLine = "";
+
+        private HtmlWeb web = new HtmlWeb();
+        private HtmlDocument document = null;
 
         /// <summary>
         /// Initializes an instance of IMDB from specified IMDB page
@@ -88,6 +87,14 @@ namespace iMovie
             }
         }
 
+        private void LoadHTML()
+        {
+            if (!string.IsNullOrEmpty(this.URL) && this.document == null)
+            {
+                this.document = this.web.Load(this.URL);
+            }
+        }
+
         private void LoadRate()
         {
             try
@@ -100,9 +107,7 @@ namespace iMovie
                 if (this.MoviePage.Source.Length > 0)
                 {
                     string source = this.MoviePage.Source;
-
-                    string pattern = RateTagPattern;
-                    Regex reg = new Regex(pattern, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Singleline);
+                    Regex reg = new Regex(RateTagPattern, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Singleline);
 
                     string rateTag = reg.Match(source).Value;
                     rateTag = rateTag.Replace(@"<span itemprop=""ratingValue"">", "");
@@ -133,9 +138,7 @@ namespace iMovie
                 if (this.MoviePage.Source.Length > 0)
                 {
                     string source = this.MoviePage.Source;
-
-                    string pattern = MinuteTagPattern;
-                    Regex reg = new Regex(pattern, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Singleline);
+                    Regex reg = new Regex(MinuteTagPattern, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Singleline);
                      
                     string minTag = reg.Match(source).Value;
                     minTag = minTag.Replace(@"datetime=""PT", "");
@@ -166,9 +169,7 @@ namespace iMovie
                 if (this.MoviePage.Source.Length > 0)
                 {
                     string source = this.MoviePage.Source;
-
-                    string pattern = YearTagPattern;
-                    Regex reg = new Regex(pattern, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Singleline);
+                    Regex reg = new Regex(YearTagPattern, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Singleline);
 
                     string yearTag = reg.Match(source).Value;
                     yearTag = yearTag.Trim();
@@ -216,22 +217,20 @@ namespace iMovie
 
                 if (this.MoviePage.Source.Length > 0)
                 {
-                    string source = this.MoviePage.Source;
+                    this.LoadHTML();
 
-                    string pattern = ImageTagPattern;
-                    Regex reg = new Regex(pattern, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Singleline);
-                    string photoTag = reg.Match(source).Value;
-
-                    string RefPattern = PhotoCoverTagPattern;
-                    Regex regRef = new Regex(RefPattern, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Singleline);
-
-                    string photo = "";
-                    photo = regRef.Match(photoTag).Value;
-                    photo = photo.Replace(@"src=""", "");
-                    photo = photo.Replace(@"""", "");
-                    photo = photo.Trim();
-
-                    this.photoURL = photo;
+                    if (this.document != null)
+                    {
+                        HtmlNode node = this.document.DocumentNode.SelectSingleNode("//div[@class='poster']//a//img[contains(@src, .)]");
+                        if (node != null)
+                        {
+                            string photo = node.Attributes["src"].Value.Trim();
+                            if (!string.IsNullOrEmpty(photo))
+                            {
+                                this.photoURL = photo;
+                            }
+                        }
+                    }
                 }
             }
             catch (Exception ex)
@@ -244,8 +243,6 @@ namespace iMovie
         {
             try
             {
-                string general = "";
-
                 if (this.MoviePage.Source.Length <= 0)
                 {
                     this.MoviePage.Update();
@@ -253,49 +250,21 @@ namespace iMovie
 
                 if (this.MoviePage.Source.Length > 0)
                 {
-                    string source = this.MoviePage.Source;
+                    this.LoadHTML();
 
-                    Regex reg = new Regex(StoryTagPatternGeneral, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Singleline);
-                    general = reg.Match(source).Value;
-
-                    if (general.Length > 0)
+                    if (this.document != null)
                     {
-                        int ind = -1;
-
-                        general = general.Replace("</p>","Ξ");
-                        ind = general.IndexOf("Ξ");
-
-                        if (ind > 0)
+                        HtmlNode node = this.document.DocumentNode.
+                            SelectSingleNode("//div[@class='article' and @id='titleStoryLine']//div[@class='inline canwrap']//p//span");
+                        if (node != null)
                         {
-                            general = general.Substring(0, ind);
+                            string story = node.InnerText.Trim();
+                            if (!string.IsNullOrEmpty(story))
+                            {
+                                this.storyLine = story;
+                            }
                         }
-
-                        int indSpan = -1;
-                        general = general = general.Replace("<span", "Ξ");
-                        indSpan = general.IndexOf("Ξ");
-
-                        if (indSpan > 0)
-                        {
-                            general = general.Substring(0, indSpan);
-                        }
-
-                        int indWriter = -1;
-                        general = general = general.Replace("<em", "Ξ");
-                        indWriter = general.IndexOf("Ξ");
-
-                        if (indWriter > 0)
-                        {
-                            general = general.Substring(0, indWriter);
-                        }
-
-                        general = Regex.Replace(general, HrefTagBegin, "", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Singleline);
-                        general = Regex.Replace(general, HrefTagEnd, "", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Singleline);
-                        general = general.Trim();
-
-                        general = StringCompare.RemoveDuplicateSpace(general);
                     }
-
-                    this.storyLine = general;
                 }
             }
             catch (Exception ex)
@@ -411,12 +380,6 @@ namespace iMovie
 
                 if (this.CreditsPage.Source.Length > 0)
                 {
-                    /*
-                    <a href="/name/nm0000199/?ref_=ttfc_fc_cl_t1"
-                    itemprop='url'> <span class="itemprop" itemprop="name">Al Pacino</span>
-                    </a>
-                    */
-
                     string source = this.CreditsPage.Source;
 
                     HtmlAgilityPack.HtmlDocument document = new HtmlAgilityPack.HtmlDocument();
@@ -705,9 +668,10 @@ namespace iMovie
             set
             {
                 try
-                {
-                    this.MoviePage.URL = value.Trim().TrimEnd('/');
-                    this.CreditsPage.URL = value.Trim().TrimEnd('/') + "/fullcredits";
+                {   
+                    string normalizedURL = value.Trim().TrimEnd('/');
+                    this.MoviePage.URL = normalizedURL;
+                    this.CreditsPage.URL = normalizedURL + "/fullcredits";
 
                     if (this.MoviePage.AutoUpdate == true)
                     {

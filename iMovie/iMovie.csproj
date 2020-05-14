@@ -148,6 +148,7 @@
     <Compile Include="App_Code\RegistryManager.cs" />
     <Compile Include="App_Code\SizeUtils.cs" />
     <Compile Include="App_Code\WindowManager.cs" />
+    <Compile Include="App_Entity\Oscobo.cs" />
     <Compile Include="App_Entity\Log.cs" />
     <Compile Include="App_Entity\MediaInformation.cs" />
     <Compile Include="App_Entity\PathSource.cs" />

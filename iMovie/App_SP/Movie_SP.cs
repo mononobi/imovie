@@ -1398,7 +1398,7 @@ namespace iMovie
                     ind++;
                 }
 
-                Google google = new Google(false);
+                Oscobo searchProvider = new Oscobo(false);
 
                 if (rate == true)
                 {
@@ -1410,16 +1410,14 @@ namespace iMovie
                         {
                             try
                             {
-                                if (google.HasRate == false && 
-                                    google.HasURL == false)
+                                if (searchProvider.HasURL == false)
                                 {
-                                    google = new Google(true, searchQuery1);
+                                    searchProvider = new Oscobo(true, searchQuery1);
                                     isOpen = true;
                                 }
-                                if (google.HasRate == false &&
-                                    google.HasURL == true)
+                                if (searchProvider.HasURL == true)
                                 {
-                                    google.IMDBMoviePage.Update();
+                                    searchProvider.IMDBMoviePage.Update();
                                     isOpen = true;
                                 }
                             }
@@ -1433,16 +1431,14 @@ namespace iMovie
 
                             try
                             {
-                                if (google.HasRate == false &&
-                                    google.HasURL == false && searchQuery2.Length > 0)
+                                if (searchProvider.HasURL == false && searchQuery2.Length > 0)
                                 {
-                                    google = new Google(true, searchQuery2);
+                                    searchProvider = new Oscobo(true, searchQuery2);
                                     isOpen = true;
                                 }
-                                if (google.HasRate == false &&
-                                    google.HasURL == true)
+                                if (searchProvider.HasURL == true)
                                 {
-                                    google.IMDBMoviePage.Update();
+                                    searchProvider.IMDBMoviePage.Update();
                                     isOpen = true;
                                 }
                             }
@@ -1451,14 +1447,9 @@ namespace iMovie
 
                             }
 
-                            if (google.HasRate == true)
+                            if (searchProvider.IMDBMoviePage.HasRate == true)
                             {
-                                movie.IMDBRate = google.Rate;
-                                rateUpdated = true;
-                            }
-                            else if (google.IMDBMoviePage.HasRate == true)
-                            {
-                                movie.IMDBRate = google.IMDBMoviePage.Rate;
+                                movie.IMDBRate = searchProvider.IMDBMoviePage.Rate;
                                 rateUpdated = true;
                             }
                         }
@@ -1479,9 +1470,9 @@ namespace iMovie
                         {
                             try
                             {
-                                if (google.HasURL == false)
+                                if (searchProvider.HasURL == false)
                                 {
-                                    google = new Google(true, searchQuery1);
+                                    searchProvider = new Oscobo(true, searchQuery1);
                                     isOpen = true;
                                 }
                             }
@@ -1495,9 +1486,9 @@ namespace iMovie
 
                             try
                             {
-                                if (google.HasURL == false && searchQuery2.Length > 0)
+                                if (searchProvider.HasURL == false && searchQuery2.Length > 0)
                                 {
-                                    google = new Google(true, searchQuery2);
+                                    searchProvider = new Oscobo(true, searchQuery2);
                                     isOpen = true;
                                 }
                             }
@@ -1506,22 +1497,17 @@ namespace iMovie
 
                             }
 
-                            if (google.HasURL == true)
+                            if (searchProvider.HasURL == true)
                             {
-                                movie.IMDBLink = google.IMDBMoviePage.URL;
+                                movie.IMDBLink = searchProvider.IMDBMoviePage.URL;
                                 linkUpdated = true;
                             }
 
                             if (shouldUpdateRate == true && rateUpdated == false)
                             {
-                                if (google.HasRate == true)
+                                if (searchProvider.IMDBMoviePage.HasRate == true)
                                 {
-                                    movie.IMDBRate = google.Rate;
-                                    rateUpdated = true;
-                                }
-                                else if (google.IMDBMoviePage.HasRate == true)
-                                {
-                                    movie.IMDBRate = google.IMDBMoviePage.Rate;
+                                    movie.IMDBRate = searchProvider.IMDBMoviePage.Rate;
                                     rateUpdated = true;
                                 }
                             }
@@ -1543,16 +1529,14 @@ namespace iMovie
                         {
                             try
                             {
-                                if (google.HasYear == false &&
-                                    google.HasURL == false)
+                                if (searchProvider.HasURL == false)
                                 {
-                                    google = new Google(true, searchQuery1);
+                                    searchProvider = new Oscobo(true, searchQuery1);
                                     isOpen = true;
                                 }
-                                if (google.HasYear == false &&
-                                    google.HasURL == true)
+                                if (searchProvider.HasURL == true)
                                 {
-                                    google.IMDBMoviePage.Update();
+                                    searchProvider.IMDBMoviePage.Update();
                                     isOpen = true;
                                 }
                             }
@@ -1566,16 +1550,14 @@ namespace iMovie
 
                             try
                             {
-                                if (google.HasYear == false &&
-                                    google.HasURL == false && searchQuery2.Length > 0)
+                                if (searchProvider.HasURL == false && searchQuery2.Length > 0)
                                 {
-                                    google = new Google(true, searchQuery2);
+                                    searchProvider = new Oscobo(true, searchQuery2);
                                     isOpen = true;
                                 }
-                                if (google.HasYear == false &&
-                                    google.HasURL == true)
+                                if (searchProvider.HasURL == true)
                                 {
-                                    google.IMDBMoviePage.Update();
+                                    searchProvider.IMDBMoviePage.Update();
                                     isOpen = true;
                                 }
                             }
@@ -1584,36 +1566,26 @@ namespace iMovie
                                     
                             }
 
-                            if (google.HasYear == true)
+                            if (searchProvider.IMDBMoviePage.HasYear == true)
                             {
-                                movie.ProductYear = google.Year;
+                                movie.ProductYear = searchProvider.IMDBMoviePage.Year;
                                 yearUpdated = true;
                             }
-                            else if (google.IMDBMoviePage.HasYear == true)
-                            {
-                                movie.ProductYear = google.IMDBMoviePage.Year;
-                                yearUpdated = true;
-                            }
-          
+
                             if (shouldUpdateRate == true && rateUpdated == false)
                             {
-                                if (google.HasRate == true)
+                                if (searchProvider.IMDBMoviePage.HasRate == true)
                                 {
-                                    movie.IMDBRate = google.Rate;
-                                    rateUpdated = true;
-                                }
-                                else if (google.IMDBMoviePage.HasRate == true)
-                                {
-                                    movie.IMDBRate = google.IMDBMoviePage.Rate;
+                                    movie.IMDBRate = searchProvider.IMDBMoviePage.Rate;
                                     rateUpdated = true;
                                 }
                             }
 
                             if (shouldUpdateLink == true && linkUpdated == false)
                             {
-                                if (google.HasURL == true)
+                                if (searchProvider.HasURL == true)
                                 {
-                                    movie.IMDBLink = google.IMDBMoviePage.URL;
+                                    movie.IMDBLink = searchProvider.IMDBMoviePage.URL;
                                     linkUpdated = true;
                                 }
                             }
@@ -1635,14 +1607,14 @@ namespace iMovie
                         {
                             try
                             {
-                                if (google.HasURL == false && google.IMDBMoviePage.HasDuration == false)
+                                if (searchProvider.HasURL == false && searchProvider.IMDBMoviePage.HasDuration == false)
                                 {
                                     if (movie.IMDBLink.Length > 0)
                                     {
                                         try
                                         {
-                                            google.IMDBMoviePage.URL = movie.IMDBLink;
-                                            google.IMDBMoviePage.Update();
+                                            searchProvider.IMDBMoviePage.URL = movie.IMDBLink;
+                                            searchProvider.IMDBMoviePage.Update();
                                             isOpen = true;
                                         }
                                         catch (Exception ex)
@@ -1650,11 +1622,11 @@ namespace iMovie
                                         }
                                     }
                                     
-                                    if (google.IMDBMoviePage.HasDuration == false)
+                                    if (searchProvider.IMDBMoviePage.HasDuration == false)
                                     {
                                         try
                                         {
-                                            google = new Google(true, searchQuery1);
+                                            searchProvider = new Oscobo(true, searchQuery1);
                                             isOpen = true;
                                         }
                                         catch (Exception ex)
@@ -1667,18 +1639,18 @@ namespace iMovie
 
                                         try
                                         {
-                                            if (google.HasURL == false &&
-                                                google.IMDBMoviePage.HasDuration == false &&
+                                            if (searchProvider.HasURL == false &&
+                                                searchProvider.IMDBMoviePage.HasDuration == false &&
                                                 searchQuery2.Length > 0)
                                             {
-                                                google = new Google(true, searchQuery2);
+                                                searchProvider = new Oscobo(true, searchQuery2);
                                                 isOpen = true;
                                             }
 
-                                            if (google.HasURL == true &&
-                                                google.IMDBMoviePage.HasDuration == false)
+                                            if (searchProvider.HasURL == true &&
+                                                searchProvider.IMDBMoviePage.HasDuration == false)
                                             {
-                                                google.IMDBMoviePage.Update();
+                                                searchProvider.IMDBMoviePage.Update();
                                                 isOpen = true;
                                             }
 
@@ -1690,9 +1662,9 @@ namespace iMovie
                                     }
                                 }
 
-                                if (google.HasURL == true && google.IMDBMoviePage.HasDuration == false)
+                                if (searchProvider.HasURL == true && searchProvider.IMDBMoviePage.HasDuration == false)
                                 {
-                                    google.IMDBMoviePage.Update();
+                                    searchProvider.IMDBMoviePage.Update();
                                     isOpen = true;
                                 }
                             }
@@ -1701,45 +1673,35 @@ namespace iMovie
                                 
                             }
 
-                            if (google.IMDBMoviePage.HasDuration == true)
+                            if (searchProvider.IMDBMoviePage.HasDuration == true)
                             {
-                                movie.Duration = google.IMDBMoviePage.Duration;
+                                movie.Duration = searchProvider.IMDBMoviePage.Duration;
                                 durationUpdated = true;
                             }
 
                             if (shouldUpdateRate == true && rateUpdated == false)
                             {
-                                if (google.HasRate == true)
+                                if (searchProvider.IMDBMoviePage.HasRate == true)
                                 {
-                                    movie.IMDBRate = google.Rate;
-                                    rateUpdated = true;
-                                }
-                                else if (google.IMDBMoviePage.HasRate == true)
-                                {
-                                    movie.IMDBRate = google.IMDBMoviePage.Rate;
+                                    movie.IMDBRate = searchProvider.IMDBMoviePage.Rate;
                                     rateUpdated = true;
                                 }
                             }
 
                             if (shouldUpdateLink == true && linkUpdated == false)
                             {
-                                if (google.HasURL == true)
+                                if (searchProvider.HasURL == true)
                                 {
-                                    movie.IMDBLink = google.IMDBMoviePage.URL;
+                                    movie.IMDBLink = searchProvider.IMDBMoviePage.URL;
                                     linkUpdated = true;
                                 }
                             }
 
                             if (shouldUpdateYear == true && yearUpdated == false)
                             {
-                                if (google.HasYear == true)
+                                if (searchProvider.IMDBMoviePage.HasYear == true)
                                 {
-                                    movie.ProductYear = google.Year;
-                                    yearUpdated = true;
-                                }
-                                else if (google.IMDBMoviePage.HasYear == true)
-                                {
-                                    movie.ProductYear = google.IMDBMoviePage.Year;
+                                    movie.ProductYear = searchProvider.IMDBMoviePage.Year;
                                     yearUpdated = true;
                                 }
                             }
@@ -1761,14 +1723,14 @@ namespace iMovie
                         {
                             try
                             {
-                                if (google.HasURL == false && google.IMDBMoviePage.HasStoryLine == false)
+                                if (searchProvider.HasURL == false && searchProvider.IMDBMoviePage.HasStoryLine == false)
                                 {
                                     if (movie.IMDBLink.Length > 0)
                                     {
                                         try
                                         {
-                                            google.IMDBMoviePage.URL = movie.IMDBLink;
-                                            google.IMDBMoviePage.Update();
+                                            searchProvider.IMDBMoviePage.URL = movie.IMDBLink;
+                                            searchProvider.IMDBMoviePage.Update();
                                             isOpen = true;
                                         }
                                         catch (Exception ex)
@@ -1776,11 +1738,11 @@ namespace iMovie
                                         }
                                     }
 
-                                    if (google.IMDBMoviePage.HasStoryLine == false)
+                                    if (searchProvider.IMDBMoviePage.HasStoryLine == false)
                                     {
                                         try
                                         {
-                                            google = new Google(true, searchQuery1);
+                                            searchProvider = new Oscobo(true, searchQuery1);
                                             isOpen = true;
                                         }
                                         catch (Exception ex)
@@ -1793,18 +1755,18 @@ namespace iMovie
 
                                         try
                                         {
-                                            if (google.HasURL == false &&
-                                                google.IMDBMoviePage.HasStoryLine == false &&
+                                            if (searchProvider.HasURL == false &&
+                                                searchProvider.IMDBMoviePage.HasStoryLine == false &&
                                                 searchQuery2.Length > 0)
                                             {
-                                                google = new Google(true, searchQuery2);
+                                                searchProvider = new Oscobo(true, searchQuery2);
                                                 isOpen = true;
                                             }
 
-                                            if (google.HasURL == true &&
-                                                google.IMDBMoviePage.HasStoryLine == false)
+                                            if (searchProvider.HasURL == true &&
+                                                searchProvider.IMDBMoviePage.HasStoryLine == false)
                                             {
-                                                google.IMDBMoviePage.Update();
+                                                searchProvider.IMDBMoviePage.Update();
                                                 isOpen = true;
                                             }
 
@@ -1816,9 +1778,9 @@ namespace iMovie
                                     }
                                 }
 
-                                if (google.HasURL == true && google.IMDBMoviePage.HasStoryLine == false)
+                                if (searchProvider.HasURL == true && searchProvider.IMDBMoviePage.HasStoryLine == false)
                                 {
-                                    google.IMDBMoviePage.Update();
+                                    searchProvider.IMDBMoviePage.Update();
                                     isOpen = true;
                                 }
                             }
@@ -1827,54 +1789,44 @@ namespace iMovie
 
                             }
 
-                            if (google.IMDBMoviePage.HasStoryLine == true)
+                            if (searchProvider.IMDBMoviePage.HasStoryLine == true)
                             {
-                                movie.StoryLine = google.IMDBMoviePage.StoryLine;
+                                movie.StoryLine = searchProvider.IMDBMoviePage.StoryLine;
                                 storyUpdated = true;
                             }
 
                             if (shouldUpdateRate == true && rateUpdated == false)
                             {
-                                if (google.HasRate == true)
+                                if (searchProvider.IMDBMoviePage.HasRate == true)
                                 {
-                                    movie.IMDBRate = google.Rate;
-                                    rateUpdated = true;
-                                }
-                                else if (google.IMDBMoviePage.HasRate == true)
-                                {
-                                    movie.IMDBRate = google.IMDBMoviePage.Rate;
+                                    movie.IMDBRate = searchProvider.IMDBMoviePage.Rate;
                                     rateUpdated = true;
                                 }
                             }
 
                             if (shouldUpdateLink == true && linkUpdated == false)
                             {
-                                if (google.HasURL == true)
+                                if (searchProvider.HasURL == true)
                                 {
-                                    movie.IMDBLink = google.IMDBMoviePage.URL;
+                                    movie.IMDBLink = searchProvider.IMDBMoviePage.URL;
                                     linkUpdated = true;
                                 }
                             }
 
                             if (shouldUpdateYear == true && yearUpdated == false)
                             {
-                                if (google.HasYear == true)
+                                if (searchProvider.IMDBMoviePage.HasYear == true)
                                 {
-                                    movie.ProductYear = google.Year;
-                                    yearUpdated = true;
-                                }
-                                else if (google.IMDBMoviePage.HasYear == true)
-                                {
-                                    movie.ProductYear = google.IMDBMoviePage.Year;
+                                    movie.ProductYear = searchProvider.IMDBMoviePage.Year;
                                     yearUpdated = true;
                                 }
                             }
 
                             if (shouldUpdateDuration == true && durationUpdated == false)
                             {
-                                if (google.IMDBMoviePage.HasStoryLine == true)
+                                if (searchProvider.IMDBMoviePage.HasStoryLine == true)
                                 {
-                                    movie.StoryLine = google.IMDBMoviePage.StoryLine;
+                                    movie.StoryLine = searchProvider.IMDBMoviePage.StoryLine;
                                     storyUpdated = true;
                                 }
                             }
@@ -1903,14 +1855,14 @@ namespace iMovie
                         {
                             try
                             {
-                                if (google.HasURL == false && google.IMDBMoviePage.HasGenre == false)
+                                if (searchProvider.HasURL == false && searchProvider.IMDBMoviePage.HasGenre == false)
                                 {
                                     if (movie.IMDBLink.Length > 0)
                                     {
                                         try
                                         {
-                                            google.IMDBMoviePage.URL = movie.IMDBLink;
-                                            google.IMDBMoviePage.Update();
+                                            searchProvider.IMDBMoviePage.URL = movie.IMDBLink;
+                                            searchProvider.IMDBMoviePage.Update();
                                             isOpen = true;
                                         }
                                         catch (Exception ex)
@@ -1918,11 +1870,11 @@ namespace iMovie
                                         }
                                     }
 
-                                    if (google.IMDBMoviePage.HasGenre == false)
+                                    if (searchProvider.IMDBMoviePage.HasGenre == false)
                                     {
                                         try
                                         {
-                                            google = new Google(true, searchQuery1);
+                                            searchProvider = new Oscobo(true, searchQuery1);
                                             isOpen = true;
                                         }
                                         catch (Exception ex)
@@ -1935,18 +1887,18 @@ namespace iMovie
 
                                         try
                                         {
-                                            if (google.HasURL == false &&
-                                                google.IMDBMoviePage.HasGenre == false &&
+                                            if (searchProvider.HasURL == false &&
+                                                searchProvider.IMDBMoviePage.HasGenre == false &&
                                                 searchQuery2.Length > 0)
                                             {
-                                                google = new Google(true, searchQuery2);
+                                                searchProvider = new Oscobo(true, searchQuery2);
                                                 isOpen = true;
                                             }
 
-                                            if (google.HasURL == true &&
-                                                google.IMDBMoviePage.HasGenre == false)
+                                            if (searchProvider.HasURL == true &&
+                                                searchProvider.IMDBMoviePage.HasGenre == false)
                                             {
-                                                google.IMDBMoviePage.Update();
+                                                searchProvider.IMDBMoviePage.Update();
                                                 isOpen = true;
                                             }
 
@@ -1958,9 +1910,9 @@ namespace iMovie
                                     }
                                 }
 
-                                if (google.HasURL == true && google.IMDBMoviePage.HasGenre == false)
+                                if (searchProvider.HasURL == true && searchProvider.IMDBMoviePage.HasGenre == false)
                                 {
-                                    google.IMDBMoviePage.Update();
+                                    searchProvider.IMDBMoviePage.Update();
                                     isOpen = true;
                                 }
                             }
@@ -1969,62 +1921,52 @@ namespace iMovie
 
                             }
 
-                            if (google.IMDBMoviePage.HasGenre == true)
+                            if (searchProvider.IMDBMoviePage.HasGenre == true)
                             {
                                 genreUpdated = true;
                             }
 
                             if (shouldUpdateRate == true && rateUpdated == false)
                             {
-                                if (google.HasRate == true)
+                                if (searchProvider.IMDBMoviePage.HasRate == true)
                                 {
-                                    movie.IMDBRate = google.Rate;
-                                    rateUpdated = true;
-                                }
-                                else if (google.IMDBMoviePage.HasRate == true)
-                                {
-                                    movie.IMDBRate = google.IMDBMoviePage.Rate;
+                                    movie.IMDBRate = searchProvider.IMDBMoviePage.Rate;
                                     rateUpdated = true;
                                 }
                             }
 
                             if (shouldUpdateLink == true && linkUpdated == false)
                             {
-                                if (google.HasURL == true)
+                                if (searchProvider.HasURL == true)
                                 {
-                                    movie.IMDBLink = google.IMDBMoviePage.URL;
+                                    movie.IMDBLink = searchProvider.IMDBMoviePage.URL;
                                     linkUpdated = true;
                                 }
                             }
 
                             if (shouldUpdateYear == true && yearUpdated == false)
                             {
-                                if (google.HasYear == true)
+                                if (searchProvider.IMDBMoviePage.HasYear == true)
                                 {
-                                    movie.ProductYear = google.Year;
-                                    yearUpdated = true;
-                                }
-                                else if (google.IMDBMoviePage.HasYear == true)
-                                {
-                                    movie.ProductYear = google.IMDBMoviePage.Year;
+                                    movie.ProductYear = searchProvider.IMDBMoviePage.Year;
                                     yearUpdated = true;
                                 }
                             }
 
                             if (shouldUpdateDuration == true && durationUpdated == false)
                             {
-                                if (google.IMDBMoviePage.HasStoryLine == true)
+                                if (searchProvider.IMDBMoviePage.HasStoryLine == true)
                                 {
-                                    movie.StoryLine = google.IMDBMoviePage.StoryLine;
+                                    movie.StoryLine = searchProvider.IMDBMoviePage.StoryLine;
                                     storyUpdated = true;
                                 }
                             }
 
                             if (shouldUpdateStory == true && storyUpdated == false)
                             {
-                                if (google.IMDBMoviePage.HasStoryLine == true)
+                                if (searchProvider.IMDBMoviePage.HasStoryLine == true)
                                 {
-                                    movie.StoryLine = google.IMDBMoviePage.StoryLine;
+                                    movie.StoryLine = searchProvider.IMDBMoviePage.StoryLine;
                                     storyUpdated = true;
                                 }
                             }
@@ -2053,14 +1995,14 @@ namespace iMovie
                         {
                             try
                             {
-                                if (google.HasURL == false && google.IMDBMoviePage.HasDirector == false)
+                                if (searchProvider.HasURL == false && searchProvider.IMDBMoviePage.HasDirector == false)
                                 {
                                     if (movie.IMDBLink.Length > 0)
                                     {
                                         try
                                         {
-                                            google.IMDBMoviePage.URL = movie.IMDBLink;
-                                            google.IMDBMoviePage.Update();
+                                            searchProvider.IMDBMoviePage.URL = movie.IMDBLink;
+                                            searchProvider.IMDBMoviePage.Update();
                                             isOpen = true;
                                         }
                                         catch (Exception ex)
@@ -2068,11 +2010,11 @@ namespace iMovie
                                         }
                                     }
 
-                                    if (google.IMDBMoviePage.HasDirector == false)
+                                    if (searchProvider.IMDBMoviePage.HasDirector == false)
                                     {
                                         try
                                         {
-                                            google = new Google(true, searchQuery1);
+                                            searchProvider = new Oscobo(true, searchQuery1);
                                             isOpen = true;
                                         }
                                         catch (Exception ex)
@@ -2085,18 +2027,18 @@ namespace iMovie
 
                                         try
                                         {
-                                            if (google.HasURL == false &&
-                                                google.IMDBMoviePage.HasDirector == false &&
+                                            if (searchProvider.HasURL == false &&
+                                                searchProvider.IMDBMoviePage.HasDirector == false &&
                                                 searchQuery2.Length > 0)
                                             {
-                                                google = new Google(true, searchQuery2);
+                                                searchProvider = new Oscobo(true, searchQuery2);
                                                 isOpen = true;
                                             }
 
-                                            if (google.HasURL == true &&
-                                                google.IMDBMoviePage.HasDirector == false)
+                                            if (searchProvider.HasURL == true &&
+                                                searchProvider.IMDBMoviePage.HasDirector == false)
                                             {
-                                                google.IMDBMoviePage.Update();
+                                                searchProvider.IMDBMoviePage.Update();
                                                 isOpen = true;
                                             }
 
@@ -2108,9 +2050,9 @@ namespace iMovie
                                     }
                                 }
 
-                                if (google.HasURL == true && google.IMDBMoviePage.HasDirector == false)
+                                if (searchProvider.HasURL == true && searchProvider.IMDBMoviePage.HasDirector == false)
                                 {
-                                    google.IMDBMoviePage.Update();
+                                    searchProvider.IMDBMoviePage.Update();
                                     isOpen = true;
                                 }
                             }
@@ -2119,69 +2061,59 @@ namespace iMovie
 
                             }
 
-                            if (google.IMDBMoviePage.HasDirector == true)
+                            if (searchProvider.IMDBMoviePage.HasDirector == true)
                             {
                                 directorUpdated = true;
                             }
 
                             if (shouldUpdateRate == true && rateUpdated == false)
                             {
-                                if (google.HasRate == true)
+                                if (searchProvider.IMDBMoviePage.HasRate == true)
                                 {
-                                    movie.IMDBRate = google.Rate;
-                                    rateUpdated = true;
-                                }
-                                else if (google.IMDBMoviePage.HasRate == true)
-                                {
-                                    movie.IMDBRate = google.IMDBMoviePage.Rate;
+                                    movie.IMDBRate = searchProvider.IMDBMoviePage.Rate;
                                     rateUpdated = true;
                                 }
                             }
 
                             if (shouldUpdateLink == true && linkUpdated == false)
                             {
-                                if (google.HasURL == true)
+                                if (searchProvider.HasURL == true)
                                 {
-                                    movie.IMDBLink = google.IMDBMoviePage.URL;
+                                    movie.IMDBLink = searchProvider.IMDBMoviePage.URL;
                                     linkUpdated = true;
                                 }
                             }
 
                             if (shouldUpdateYear == true && yearUpdated == false)
                             {
-                                if (google.HasYear == true)
+                                if (searchProvider.IMDBMoviePage.HasYear == true)
                                 {
-                                    movie.ProductYear = google.Year;
-                                    yearUpdated = true;
-                                }
-                                else if (google.IMDBMoviePage.HasYear == true)
-                                {
-                                    movie.ProductYear = google.IMDBMoviePage.Year;
+                                    movie.ProductYear = searchProvider.IMDBMoviePage.Year;
                                     yearUpdated = true;
                                 }
                             }
 
                             if (shouldUpdateDuration == true && durationUpdated == false)
                             {
-                                if (google.IMDBMoviePage.HasStoryLine == true)
+                                if (searchProvider.IMDBMoviePage.HasStoryLine == true)
                                 {
-                                    movie.StoryLine = google.IMDBMoviePage.StoryLine;
+                                    movie.StoryLine = searchProvider.IMDBMoviePage.StoryLine;
                                     storyUpdated = true;
                                 }
                             }
 
                             if (shouldUpdateStory == true && storyUpdated == false)
                             {
-                                if (google.IMDBMoviePage.HasStoryLine == true)
+                                if (searchProvider.IMDBMoviePage.HasStoryLine == true)
                                 {
-                                    movie.StoryLine = google.IMDBMoviePage.StoryLine;
+                                    movie.StoryLine = searchProvider.IMDBMoviePage.StoryLine;
                                     storyUpdated = true;
                                 }
                             }
 
                             if (shouldUpdateGenre == true && genreUpdated == false)
                             {
-                                if (google.IMDBMoviePage.HasGenre == true)
+                                if (searchProvider.IMDBMoviePage.HasGenre == true)
                                 {
                                     genreUpdated = true;
                                 }
@@ -2211,14 +2143,14 @@ namespace iMovie
                         {
                             try
                             {
-                                if (google.HasURL == false && google.IMDBMoviePage.HasLanguage == false)
+                                if (searchProvider.HasURL == false && searchProvider.IMDBMoviePage.HasLanguage == false)
                                 {
                                     if (movie.IMDBLink.Length > 0)
                                     {
                                         try
                                         {
-                                            google.IMDBMoviePage.URL = movie.IMDBLink;
-                                            google.IMDBMoviePage.Update();
+                                            searchProvider.IMDBMoviePage.URL = movie.IMDBLink;
+                                            searchProvider.IMDBMoviePage.Update();
                                             isOpen = true;
                                         }
                                         catch (Exception ex)
@@ -2226,11 +2158,11 @@ namespace iMovie
                                         }
                                     }
 
-                                    if (google.IMDBMoviePage.HasLanguage == false)
+                                    if (searchProvider.IMDBMoviePage.HasLanguage == false)
                                     {
                                         try
                                         {
-                                            google = new Google(true, searchQuery1);
+                                            searchProvider = new Oscobo(true, searchQuery1);
                                             isOpen = true;
                                         }
                                         catch (Exception ex)
@@ -2243,18 +2175,18 @@ namespace iMovie
 
                                         try
                                         {
-                                            if (google.HasURL == false &&
-                                                google.IMDBMoviePage.HasLanguage == false &&
+                                            if (searchProvider.HasURL == false &&
+                                                searchProvider.IMDBMoviePage.HasLanguage == false &&
                                                 searchQuery2.Length > 0)
                                             {
-                                                google = new Google(true, searchQuery2);
+                                                searchProvider = new Oscobo(true, searchQuery2);
                                                 isOpen = true;
                                             }
 
-                                            if (google.HasURL == true &&
-                                                google.IMDBMoviePage.HasLanguage == false)
+                                            if (searchProvider.HasURL == true &&
+                                                searchProvider.IMDBMoviePage.HasLanguage == false)
                                             {
-                                                google.IMDBMoviePage.Update();
+                                                searchProvider.IMDBMoviePage.Update();
                                                 isOpen = true;
                                             }
 
@@ -2266,9 +2198,9 @@ namespace iMovie
                                     }
                                 }
 
-                                if (google.HasURL == true && google.IMDBMoviePage.HasLanguage == false)
+                                if (searchProvider.HasURL == true && searchProvider.IMDBMoviePage.HasLanguage == false)
                                 {
-                                    google.IMDBMoviePage.Update();
+                                    searchProvider.IMDBMoviePage.Update();
                                     isOpen = true;
                                 }
                             }
@@ -2277,69 +2209,59 @@ namespace iMovie
 
                             }
 
-                            if (google.IMDBMoviePage.HasLanguage == true)
+                            if (searchProvider.IMDBMoviePage.HasLanguage == true)
                             {
                                 languageUpdated = true;
                             }
 
                             if (shouldUpdateRate == true && rateUpdated == false)
                             {
-                                if (google.HasRate == true)
+                                if (searchProvider.IMDBMoviePage.HasRate == true)
                                 {
-                                    movie.IMDBRate = google.Rate;
-                                    rateUpdated = true;
-                                }
-                                else if (google.IMDBMoviePage.HasRate == true)
-                                {
-                                    movie.IMDBRate = google.IMDBMoviePage.Rate;
+                                    movie.IMDBRate = searchProvider.IMDBMoviePage.Rate;
                                     rateUpdated = true;
                                 }
                             }
 
                             if (shouldUpdateLink == true && linkUpdated == false)
                             {
-                                if (google.HasURL == true)
+                                if (searchProvider.HasURL == true)
                                 {
-                                    movie.IMDBLink = google.IMDBMoviePage.URL;
+                                    movie.IMDBLink = searchProvider.IMDBMoviePage.URL;
                                     linkUpdated = true;
                                 }
                             }
 
                             if (shouldUpdateYear == true && yearUpdated == false)
                             {
-                                if (google.HasYear == true)
+                                if (searchProvider.IMDBMoviePage.HasYear == true)
                                 {
-                                    movie.ProductYear = google.Year;
-                                    yearUpdated = true;
-                                }
-                                else if (google.IMDBMoviePage.HasYear == true)
-                                {
-                                    movie.ProductYear = google.IMDBMoviePage.Year;
+                                    movie.ProductYear = searchProvider.IMDBMoviePage.Year;
                                     yearUpdated = true;
                                 }
                             }
 
                             if (shouldUpdateDuration == true && durationUpdated == false)
                             {
-                                if (google.IMDBMoviePage.HasStoryLine == true)
+                                if (searchProvider.IMDBMoviePage.HasStoryLine == true)
                                 {
-                                    movie.StoryLine = google.IMDBMoviePage.StoryLine;
+                                    movie.StoryLine = searchProvider.IMDBMoviePage.StoryLine;
                                     storyUpdated = true;
                                 }
                             }
 
                             if (shouldUpdateStory == true && storyUpdated == false)
                             {
-                                if (google.IMDBMoviePage.HasStoryLine == true)
+                                if (searchProvider.IMDBMoviePage.HasStoryLine == true)
                                 {
-                                    movie.StoryLine = google.IMDBMoviePage.StoryLine;
+                                    movie.StoryLine = searchProvider.IMDBMoviePage.StoryLine;
                                     storyUpdated = true;
                                 }
                             }
 
                             if (shouldUpdateGenre == true && genreUpdated == false)
                             {
-                                if (google.IMDBMoviePage.HasGenre == true)
+                                if (searchProvider.IMDBMoviePage.HasGenre == true)
                                 {
                                     genreUpdated = true;
                                 }
@@ -2347,7 +2269,7 @@ namespace iMovie
 
                             if (shouldUpdateDirector == true && directorUpdated == false)
                             {
-                                if (google.IMDBMoviePage.HasDirector == true)
+                                if (searchProvider.IMDBMoviePage.HasDirector == true)
                                 {
                                     directorUpdated = true;
                                 }
@@ -2384,14 +2306,14 @@ namespace iMovie
                                 }
                             }
 
-                            if (shouldUpdateDirectorImage == true && google.HasURL == false && google.IMDBMoviePage.HasDirector == false)
+                            if (shouldUpdateDirectorImage == true && searchProvider.HasURL == false && searchProvider.IMDBMoviePage.HasDirector == false)
                             {
                                 if (movie.IMDBLink.Length > 0)
                                 {
                                     try
                                     {
-                                        google.IMDBMoviePage.URL = movie.IMDBLink;
-                                        google.IMDBMoviePage.Update();
+                                        searchProvider.IMDBMoviePage.URL = movie.IMDBLink;
+                                        searchProvider.IMDBMoviePage.Update();
                                         isOpen = true;
                                     }
                                     catch (Exception ex)
@@ -2399,11 +2321,11 @@ namespace iMovie
                                     }
                                 }
 
-                                if (google.IMDBMoviePage.HasDirector == false)
+                                if (searchProvider.IMDBMoviePage.HasDirector == false)
                                 {
                                     try
                                     {
-                                        google = new Google(true, searchQuery1);
+                                        searchProvider = new Oscobo(true, searchQuery1);
                                         isOpen = true;
                                     }
                                     catch (Exception ex)
@@ -2416,18 +2338,18 @@ namespace iMovie
 
                                     try
                                     {
-                                        if (google.HasURL == false &&
-                                            google.IMDBMoviePage.HasDirector == false &&
+                                        if (searchProvider.HasURL == false &&
+                                            searchProvider.IMDBMoviePage.HasDirector == false &&
                                             searchQuery2.Length > 0)
                                         {
-                                            google = new Google(true, searchQuery2);
+                                            searchProvider = new Oscobo(true, searchQuery2);
                                             isOpen = true;
                                         }
 
-                                        if (google.HasURL == true &&
-                                            google.IMDBMoviePage.HasDirector == false)
+                                        if (searchProvider.HasURL == true &&
+                                            searchProvider.IMDBMoviePage.HasDirector == false)
                                         {
-                                            google.IMDBMoviePage.Update();
+                                            searchProvider.IMDBMoviePage.Update();
                                             isOpen = true;
                                         }
 
@@ -2438,9 +2360,9 @@ namespace iMovie
                                     }
                                 }
 
-                                if (google.HasURL == true && google.IMDBMoviePage.HasDirector == false)
+                                if (searchProvider.HasURL == true && searchProvider.IMDBMoviePage.HasDirector == false)
                                 {
-                                    google.IMDBMoviePage.Update();
+                                    searchProvider.IMDBMoviePage.Update();
                                     isOpen = true;
                                 }
                             }
@@ -2450,7 +2372,7 @@ namespace iMovie
 
                         }
 
-                        if (shouldUpdateDirectorImage == true && google.IMDBMoviePage.HasDirector == true)
+                        if (shouldUpdateDirectorImage == true && searchProvider.IMDBMoviePage.HasDirector == true)
                         {
                             if (Directory.Exists(PathUtils.GetApplicationPersonPath()) == false)
                             {
@@ -2468,7 +2390,7 @@ namespace iMovie
                                 {
                                     if (File.Exists(dr["PhotoLink"].ToString()) == false)
                                     {
-                                        foreach (Person p in google.IMDBMoviePage.Directors)
+                                        foreach (Person p in searchProvider.IMDBMoviePage.Directors)
                                         {
                                             if (dr["FullName"].ToString() == p.FullName && p.PhotoLink.Length > 0)
                                             {
@@ -2508,7 +2430,7 @@ namespace iMovie
                             }
                             else
                             {
-                                foreach (Person p in google.IMDBMoviePage.Directors)
+                                foreach (Person p in searchProvider.IMDBMoviePage.Directors)
                                 {
                                     if (File.Exists(PersonPhotoPath + p.FullName + ".jpg") == false)
                                     {
@@ -2543,62 +2465,52 @@ namespace iMovie
 
                         if (shouldUpdateRate == true && rateUpdated == false)
                         {
-                            if (google.HasRate == true)
+                            if (searchProvider.IMDBMoviePage.HasRate == true)
                             {
-                                movie.IMDBRate = google.Rate;
-                                rateUpdated = true;
-                            }
-                            else if (google.IMDBMoviePage.HasRate == true)
-                            {
-                                movie.IMDBRate = google.IMDBMoviePage.Rate;
+                                movie.IMDBRate = searchProvider.IMDBMoviePage.Rate;
                                 rateUpdated = true;
                             }
                         }
 
                         if (shouldUpdateLink == true && linkUpdated == false)
                         {
-                            if (google.HasURL == true)
+                            if (searchProvider.HasURL == true)
                             {
-                                movie.IMDBLink = google.IMDBMoviePage.URL;
+                                movie.IMDBLink = searchProvider.IMDBMoviePage.URL;
                                 linkUpdated = true;
                             }
                         }
 
                         if (shouldUpdateYear == true && yearUpdated == false)
                         {
-                            if (google.HasYear == true)
+                            if (searchProvider.IMDBMoviePage.HasYear == true)
                             {
-                                movie.ProductYear = google.Year;
-                                yearUpdated = true;
-                            }
-                            else if (google.IMDBMoviePage.HasYear == true)
-                            {
-                                movie.ProductYear = google.IMDBMoviePage.Year;
+                                movie.ProductYear = searchProvider.IMDBMoviePage.Year;
                                 yearUpdated = true;
                             }
                         }
 
                         if (shouldUpdateDuration == true && durationUpdated == false)
                         {
-                            if (google.IMDBMoviePage.HasStoryLine == true)
+                            if (searchProvider.IMDBMoviePage.HasStoryLine == true)
                             {
-                                movie.StoryLine = google.IMDBMoviePage.StoryLine;
+                                movie.StoryLine = searchProvider.IMDBMoviePage.StoryLine;
                                 storyUpdated = true;
                             }
                         }
 
                         if (shouldUpdateStory == true && storyUpdated == false)
                         {
-                            if (google.IMDBMoviePage.HasStoryLine == true)
+                            if (searchProvider.IMDBMoviePage.HasStoryLine == true)
                             {
-                                movie.StoryLine = google.IMDBMoviePage.StoryLine;
+                                movie.StoryLine = searchProvider.IMDBMoviePage.StoryLine;
                                 storyUpdated = true;
                             }
                         }
 
                         if (shouldUpdateGenre == true && genreUpdated == false)
                         {
-                            if (google.IMDBMoviePage.HasGenre == true)
+                            if (searchProvider.IMDBMoviePage.HasGenre == true)
                             {
                                 genreUpdated = true;
                             }
@@ -2606,7 +2518,7 @@ namespace iMovie
 
                         if (shouldUpdateDirector == true && directorUpdated == false)
                         {
-                            if (google.IMDBMoviePage.HasDirector == true)
+                            if (searchProvider.IMDBMoviePage.HasDirector == true)
                             {
                                 directorUpdated = true;
                             }
@@ -2614,7 +2526,7 @@ namespace iMovie
 
                         if (shouldUpdateLanguage == true && languageUpdated == false)
                         {
-                            if (google.IMDBMoviePage.HasLanguage == true)
+                            if (searchProvider.IMDBMoviePage.HasLanguage == true)
                             {
                                 languageUpdated = true;
                             }
@@ -2654,14 +2566,14 @@ namespace iMovie
                                 {
                                     try
                                     {
-                                        if (google.HasURL == false && google.IMDBMoviePage.HasPhotoURL == false)
+                                        if (searchProvider.HasURL == false && searchProvider.IMDBMoviePage.HasPhotoURL == false)
                                         {
                                             if (movie.IMDBLink.Length > 0)
                                             {
                                                 try
                                                 {
-                                                    google.IMDBMoviePage.URL = movie.IMDBLink;
-                                                    google.IMDBMoviePage.Update();
+                                                    searchProvider.IMDBMoviePage.URL = movie.IMDBLink;
+                                                    searchProvider.IMDBMoviePage.Update();
                                                     isOpen = true;
                                                 }
                                                 catch (Exception ex)
@@ -2669,11 +2581,11 @@ namespace iMovie
                                                 }
                                             }
 
-                                            if (google.IMDBMoviePage.HasPhotoURL == false)
+                                            if (searchProvider.IMDBMoviePage.HasPhotoURL == false)
                                             {
                                                 try
                                                 {
-                                                    google = new Google(true, searchQuery1);
+                                                    searchProvider = new Oscobo(true, searchQuery1);
                                                     isOpen = true;
                                                 }
                                                 catch (Exception ex)
@@ -2686,18 +2598,18 @@ namespace iMovie
 
                                                 try
                                                 {
-                                                    if (google.HasURL == false &&
-                                                        google.IMDBMoviePage.HasPhotoURL == false &&
+                                                    if (searchProvider.HasURL == false &&
+                                                        searchProvider.IMDBMoviePage.HasPhotoURL == false &&
                                                         searchQuery2.Length > 0)
                                                     {
-                                                        google = new Google(true, searchQuery2);
+                                                        searchProvider = new Oscobo(true, searchQuery2);
                                                         isOpen = true;
                                                     }
 
-                                                    if (google.HasURL == true &&
-                                                        google.IMDBMoviePage.HasPhotoURL == false)
+                                                    if (searchProvider.HasURL == true &&
+                                                        searchProvider.IMDBMoviePage.HasPhotoURL == false)
                                                     {
-                                                        google.IMDBMoviePage.Update();
+                                                        searchProvider.IMDBMoviePage.Update();
                                                         isOpen = true;
                                                     }
 
@@ -2709,9 +2621,9 @@ namespace iMovie
                                             }
                                         }
 
-                                        if (google.HasURL == true && google.IMDBMoviePage.HasPhotoURL == false)
+                                        if (searchProvider.HasURL == true && searchProvider.IMDBMoviePage.HasPhotoURL == false)
                                         {
-                                            google.IMDBMoviePage.Update();
+                                            searchProvider.IMDBMoviePage.Update();
                                             isOpen = true;
                                         }
                                     }
@@ -2723,62 +2635,52 @@ namespace iMovie
 
                                 if (shouldUpdateRate == true && rateUpdated == false)
                                 {
-                                    if (google.HasRate == true)
+                                    if (searchProvider.IMDBMoviePage.HasRate == true)
                                     {
-                                        movie.IMDBRate = google.Rate;
-                                        rateUpdated = true;
-                                    }
-                                    else if (google.IMDBMoviePage.HasRate == true)
-                                    {
-                                        movie.IMDBRate = google.IMDBMoviePage.Rate;
+                                        movie.IMDBRate = searchProvider.IMDBMoviePage.Rate;
                                         rateUpdated = true;
                                     }
                                 }
 
                                 if (shouldUpdateLink == true && linkUpdated == false)
                                 {
-                                    if (google.HasURL == true)
+                                    if (searchProvider.HasURL == true)
                                     {
-                                        movie.IMDBLink = google.IMDBMoviePage.URL;
+                                        movie.IMDBLink = searchProvider.IMDBMoviePage.URL;
                                         linkUpdated = true;
                                     }
                                 }
 
                                 if (shouldUpdateYear == true && yearUpdated == false)
                                 {
-                                    if (google.HasYear == true)
+                                    if (searchProvider.IMDBMoviePage.HasYear == true)
                                     {
-                                        movie.ProductYear = google.Year;
-                                        yearUpdated = true;
-                                    }
-                                    else if (google.IMDBMoviePage.HasYear == true)
-                                    {
-                                        movie.ProductYear = google.IMDBMoviePage.Year;
+                                        movie.ProductYear = searchProvider.IMDBMoviePage.Year;
                                         yearUpdated = true;
                                     }
                                 }
 
                                 if (shouldUpdateDuration == true && durationUpdated == false)
                                 {
-                                    if (google.IMDBMoviePage.HasDuration == true)
+                                    if (searchProvider.IMDBMoviePage.HasDuration == true)
                                     {
-                                        movie.Duration = google.IMDBMoviePage.Duration;
+                                        movie.Duration = searchProvider.IMDBMoviePage.Duration;
                                         durationUpdated = true;
                                     }
                                 }
 
                                 if (shouldUpdateStory == true && storyUpdated == false)
                                 {
-                                    if (google.IMDBMoviePage.HasStoryLine == true)
+                                    if (searchProvider.IMDBMoviePage.HasStoryLine == true)
                                     {
-                                        movie.StoryLine = google.IMDBMoviePage.StoryLine;
+                                        movie.StoryLine = searchProvider.IMDBMoviePage.StoryLine;
                                         storyUpdated = true;
                                     }
                                 }
 
                                 if (shouldUpdateGenre == true && genreUpdated == false)
                                 {
-                                    if (google.IMDBMoviePage.HasGenre == true)
+                                    if (searchProvider.IMDBMoviePage.HasGenre == true)
                                     {
                                         genreUpdated = true;
                                     }
@@ -2786,7 +2688,7 @@ namespace iMovie
 
                                 if (shouldUpdateDirector == true && directorUpdated == false)
                                 {
-                                    if (google.IMDBMoviePage.HasDirector == true)
+                                    if (searchProvider.IMDBMoviePage.HasDirector == true)
                                     {
                                         directorUpdated = true;
                                     }
@@ -2794,7 +2696,7 @@ namespace iMovie
 
                                 if (shouldUpdateLanguage == true && languageUpdated == false)
                                 {
-                                    if (google.IMDBMoviePage.HasLanguage == true)
+                                    if (searchProvider.IMDBMoviePage.HasLanguage == true)
                                     {
                                         languageUpdated = true;
                                     }
@@ -2813,9 +2715,9 @@ namespace iMovie
                             }
                             else
                             {
-                                if (google.IMDBMoviePage.HasPhotoURL == true)
+                                if (searchProvider.IMDBMoviePage.HasPhotoURL == true)
                                 {
-                                    string realName = movie.FullTitle + Path.GetExtension(google.IMDBMoviePage.PhotoURL);
+                                    string realName = movie.FullTitle + Path.GetExtension(searchProvider.IMDBMoviePage.PhotoURL);
                                     string realImageLink = MoviePosterPath + realName;
                                     string realTemp = PathUtils.GetApplicationTempPath() + realName;
 
@@ -2829,7 +2731,7 @@ namespace iMovie
                                         Directory.CreateDirectory(PathUtils.GetApplicationTempPath());
                                     }
 
-                                    IMDb.DownloadImage(google.IMDBMoviePage.PhotoURL, realTemp);
+                                    IMDb.DownloadImage(searchProvider.IMDBMoviePage.PhotoURL, realTemp);
                                     isOpen = true;
 
                                     InsertManager im = new InsertManager(generateLog, false);
@@ -2950,7 +2852,7 @@ namespace iMovie
                                 {
                                     existedGenre = false;
 
-                                    foreach (Genre gen in google.IMDBMoviePage.Genre)
+                                    foreach (Genre gen in searchProvider.IMDBMoviePage.Genre)
                                     {
                                         if (mdr["GenreName"].ToString().Equals(gen.GenreName, StringComparison.CurrentCultureIgnoreCase) == true)
                                         {
@@ -2976,7 +2878,7 @@ namespace iMovie
 
                                 int i = 0;
 
-                                foreach (Genre gen in google.IMDBMoviePage.Genre)
+                                foreach (Genre gen in searchProvider.IMDBMoviePage.Genre)
                                 {
                                     existedGenre = false;
                                     long insertGenreID = 0;
@@ -3048,7 +2950,7 @@ namespace iMovie
                                 {
                                     existedLanguage = false;
 
-                                    foreach (Language lang in google.IMDBMoviePage.Languages)
+                                    foreach (Language lang in searchProvider.IMDBMoviePage.Languages)
                                     {
                                         if (mdr["LanguageName"].ToString().Equals(lang.LanguageName, StringComparison.CurrentCultureIgnoreCase) == true)
                                         {
@@ -3072,7 +2974,7 @@ namespace iMovie
                                     }
                                 }
 
-                                foreach (Language lang in google.IMDBMoviePage.Languages)
+                                foreach (Language lang in searchProvider.IMDBMoviePage.Languages)
                                 {
                                     existedLanguage = false;
                                     long insertLanguageID = 0;
@@ -3128,7 +3030,7 @@ namespace iMovie
                                 {
                                     existedDirector = false;
 
-                                    foreach (Person per in google.IMDBMoviePage.Directors)
+                                    foreach (Person per in searchProvider.IMDBMoviePage.Directors)
                                     {
                                         if (Person_SP.IsSamePerson(per.FullName, per.IMDBLink, mdr) > 0)
                                         {
@@ -3152,7 +3054,7 @@ namespace iMovie
                                     }
                                 }
 
-                                foreach (Person per in google.IMDBMoviePage.Directors)
+                                foreach (Person per in searchProvider.IMDBMoviePage.Directors)
                                 {
                                     existedDirector = false;
                                     long insertDirectorID = 0;
@@ -3197,7 +3099,7 @@ namespace iMovie
                             {
                                 if (directorUpdated == false)
                                 {
-                                    foreach (Person p in google.IMDBMoviePage.Directors)
+                                    foreach (Person p in searchProvider.IMDBMoviePage.Directors)
                                     {
                                         try
                                         {
@@ -3217,7 +3119,7 @@ namespace iMovie
 
                                     foreach (DataRow dr in dtMovieDirector.Rows)
                                     {
-                                        foreach (Person p in google.IMDBMoviePage.Directors)
+                                        foreach (Person p in searchProvider.IMDBMoviePage.Directors)
                                         {
                                             if (dr["FullName"].ToString() == p.FullName && p.PersonID == 99999999)
                                             {

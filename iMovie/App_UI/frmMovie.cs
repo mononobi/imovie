@@ -456,7 +456,7 @@ namespace iMovie
             {
                 if (this.movie.IMDBLink.Length > 0)
                 {
-                    Process.Start("iexplore.exe", this.movie.IMDBLink);
+                    Process.Start(this.movie.IMDBLink);
                 }
                 else
                 {
@@ -482,7 +482,7 @@ namespace iMovie
                     {
                         root = dr["PathString"].ToString() + @"\";
 
-                        if(Directory.Exists(root + this.movie.FileLink) == true)
+                        if (Directory.Exists(root + this.movie.FileLink) == true)
                         {
                             flag = 1;
                             Process.Start(root + this.movie.FileLink);
