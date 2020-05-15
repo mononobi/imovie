@@ -11,12 +11,7 @@ namespace iMovie
     public class IMDb
     {
         private string SearchQueryPattern = @"http://www.imdb.com/find?q=@QUERY@&s=tt";
-        private string TitleResultTagPattern = @"<td[ ]*?class=""result_text"">[ ]*?<a[ ]*?href=""[^"" <>]*""[ ]*?>[^<>]*</a>[^""<>]*<";
-        private string TitlePageReferenceTagPattern = @"href=""[^"" <>]*""";
-        private string RateTagPattern = @"<span[ ]*?itemprop=""ratingValue"">[^""<>]*</span>";
         private string PhotoCoverTagPattern = @"src=""[^"" <>]*""";
-        private string MinuteTagPattern = @"datetime=""PT[\d]+M""";
-        private string YearTagPattern = @"(?<=<title>[^<>]*)([1|2]{1}[0|9]{1}[0-9]{2})(?=[^<>]*</title>)";
         private string GenreTagPattern = @"(?<=<div[ ]*?class=""see-more[ ]*?inline[ ]*?canwrap""[ ]*?itemprop=""genre"">[ ]*?<h4[ ]*?class=""inline"">Genres:</h4>[ ]*?)(.*)(?=[ ]*?</div>)";
         private string GenreEachTagPattern = @"(?<=<a[^<>]*>)([^<>]*)(?=</a>)";
         private string DirectorsListPattern = @"<h4[ ]*?class=""inline"">Director[s]{0,1}:</h4>[ ]*?<span[ ]*?itemprop=""director""[ ]*?itemscope[ ]*?itemtype=""http://schema.org/Person"">[ ]*?(.*?)[ ]*?</span>[ ]*?</div>";
@@ -40,8 +35,8 @@ namespace iMovie
         private double rate = 0;
         private int year = 0; 
         private int minutes = 0;
-        private string photoURL = "";
-        private string storyLine = "";
+        private string photoURL = string.Empty;
+        private string storyLine = string.Empty;
 
         private HtmlWeb web = new HtmlWeb();
         private HtmlDocument document = null;
@@ -106,18 +101,20 @@ namespace iMovie
 
                 if (this.MoviePage.Source.Length > 0)
                 {
-                    string source = this.MoviePage.Source;
-                    Regex reg = new Regex(RateTagPattern, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Singleline);
+                    this.LoadHTML();
 
-                    string rateTag = reg.Match(source).Value;
-                    rateTag = rateTag.Replace(@"<span itemprop=""ratingValue"">", "");
-                    rateTag = rateTag.Replace(@"</span>", "");
-                    rateTag = rateTag.Trim();
-
-                    double value = 0;
-                    double.TryParse(rateTag, out value);
-
-                    this.rate = value;
+                    if (this.document != null)
+                    {
+                        HtmlNode node = this.document.DocumentNode.
+                            SelectSingleNode("//div[@class='imdbRating']//div[@class='ratingValue']//strong//span[@itemprop='ratingValue']");
+                        if (node != null)
+                        {
+                            string rate = node.InnerText.Trim();
+                            double value = 0;
+                            double.TryParse(rate, out value);
+                            this.rate = value;
+                        }
+                    }
                 }
             }
             catch (Exception ex)
@@ -128,7 +125,7 @@ namespace iMovie
 
         private void LoadMinute()
         {
-            try 
+            try
             {
                 if (this.MoviePage.Source.Length <= 0)
                 {
@@ -137,18 +134,21 @@ namespace iMovie
 
                 if (this.MoviePage.Source.Length > 0)
                 {
-                    string source = this.MoviePage.Source;
-                    Regex reg = new Regex(MinuteTagPattern, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Singleline);
-                     
-                    string minTag = reg.Match(source).Value;
-                    minTag = minTag.Replace(@"datetime=""PT", "");
-                    minTag = minTag.Replace(@"M""", "");
-                    minTag = minTag.Trim();
+                    this.LoadHTML();
 
-                    int value = 0;
-                    int.TryParse(minTag, out value);
-
-                    this.minutes = value;
+                    if (this.document != null)
+                    {
+                        HtmlNode node = this.document.DocumentNode.
+                            SelectSingleNode("//div[@class='article' and @id='titleDetails']//div[@class='txt-block']//time[contains(@datetime, *)]");
+                        if (node != null)
+                        {
+                            string minutes = node.Attributes["datetime"].Value.Trim();
+                            minutes = minutes.Replace("PT", "").Replace("M", "").Trim();
+                            int value = 0;
+                            int.TryParse(minutes, out value);
+                            this.minutes = value;
+                        }
+                    }
                 }
             }
             catch (Exception ex)
@@ -159,7 +159,7 @@ namespace iMovie
 
         private void LoadYear()
         {
-            try 
+            try
             {
                 if (this.MoviePage.Source.Length <= 0)
                 {
@@ -168,16 +168,20 @@ namespace iMovie
 
                 if (this.MoviePage.Source.Length > 0)
                 {
-                    string source = this.MoviePage.Source;
-                    Regex reg = new Regex(YearTagPattern, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Singleline);
+                    this.LoadHTML();
 
-                    string yearTag = reg.Match(source).Value;
-                    yearTag = yearTag.Trim();
-
-                    int value = 0;
-                    int.TryParse(yearTag, out value);
-
-                    this.year = value;
+                    if (this.document != null)
+                    {
+                        HtmlNode node = this.document.DocumentNode.
+                            SelectSingleNode("//div[@class='title_wrapper']//h1//span[@id='titleYear']//a[contains(@href, *)]");
+                        if (node != null)
+                        {
+                            string year = node.InnerText.Trim();
+                            int value = 0;
+                            int.TryParse(year, out value);
+                            this.year = value;
+                        }
+                    }
                 }
             }
             catch (Exception ex)
@@ -221,7 +225,7 @@ namespace iMovie
 
                     if (this.document != null)
                     {
-                        HtmlNode node = this.document.DocumentNode.SelectSingleNode("//div[@class='poster']//a//img[contains(@src, .)]");
+                        HtmlNode node = this.document.DocumentNode.SelectSingleNode("//div[@class='poster']//a//img[contains(@src, *)]");
                         if (node != null)
                         {
                             string photo = node.Attributes["src"].Value.Trim();

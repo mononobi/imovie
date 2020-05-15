@@ -6,11 +6,11 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("iMovie")]
-[assembly: AssemblyDescription("Movie Database Manager")]
+[assembly: AssemblyDescription("Movie Collection Manager")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("MoNo")]
+[assembly: AssemblyCompany("mono")]
 [assembly: AssemblyProduct("iMovie")]
-[assembly: AssemblyCopyright("Copyright ©  2016")]
+[assembly: AssemblyCopyright("Copyright ©  2013-2020")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -32,5 +32,5 @@ using System.Runtime.InteropServices;
 // You can specify all the values or you can default the Build and Revision Numbers 
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("16.02.07")]
-[assembly: AssemblyFileVersion("16.02.07")]
+[assembly: AssemblyVersion("20.05.20")]
+[assembly: AssemblyFileVersion("20.05.20")]

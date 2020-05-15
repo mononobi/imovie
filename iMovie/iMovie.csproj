@@ -161,7 +161,6 @@
     <Compile Include="App_Entity\SystemParameter.cs" />
     <Compile Include="App_Entity\Users.cs" />
     <Compile Include="App_Entity\WebPage.cs" />
-    <Compile Include="App_Entity\Google.cs" />
     <Compile Include="App_Entity\IMDb.cs" />
     <Compile Include="App_Entity\InsertManager.cs" />
     <Compile Include="App_Queries\FunctionRepository.cs" />
