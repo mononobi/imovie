@@ -11,16 +11,9 @@ namespace iMovie
     public class IMDb
     {
         private string SearchQueryPattern = @"http://www.imdb.com/find?q=@QUERY@&s=tt";
+        private string IMDBBaseURL = @"http://www.imdb.com";
         private string PhotoCoverTagPattern = @"src=""[^"" <>]*""";
-        private string GenreTagPattern = @"(?<=<div[ ]*?class=""see-more[ ]*?inline[ ]*?canwrap""[ ]*?itemprop=""genre"">[ ]*?<h4[ ]*?class=""inline"">Genres:</h4>[ ]*?)(.*)(?=[ ]*?</div>)";
-        private string GenreEachTagPattern = @"(?<=<a[^<>]*>)([^<>]*)(?=</a>)";
-        private string DirectorsListPattern = @"<h4[ ]*?class=""inline"">Director[s]{0,1}:</h4>[ ]*?<span[ ]*?itemprop=""director""[ ]*?itemscope[ ]*?itemtype=""http://schema.org/Person"">[ ]*?(.*?)[ ]*?</span>[ ]*?</div>";
-        private string EachDirectorTagPattern = @"<span[ ]*?itemprop=""director""[ ]*?itemscope[ ]*?itemtype=""http://schema.org/Person"">[ ]*?<a[ ]*?href=""/name/[^"" <>]*""[ ]*?itemprop='url'><span[ ]*?class=""itemprop""[ ]*?itemprop=""name"">[^<>]*</span></a>";
-        private string DirectorNamePattern = @"(?<=<span[ ]*?class=""itemprop""[ ]*?itemprop=""name"">)([^<>]*)(?=</span>)";
-        private string DirectorURLPattern = @"/name/nm[\d]+";
         private string PersonImageTagPattern = @"alt=""[^""<>]*[ ]*?Picture""[ ]*?title=""[^""<>]*[ ]*?Picture""[ ]*?src=""[^"" <>]*""[ ]*?itemprop=""image""[ ]*?/>";
-        private string LanguageTagPattern = @"(?<=<h4[ ]*?class=""inline"">Language:</h4>[ ]*?)(.*)(?=[ ]*?</div>)";
-        private string LanguageEachTagPattern = @"(?<=<a[ ]*?href=""[^<> ""]*""[ ]*?itemprop='url'>)([^<>]*)(?=</a>)";
 
         // This is the standard way of parsing html, all the other regex based patterns, should be changed this way.
         private string ActorsListXPath = "//table[contains(@class,'cast_list')]//a[contains(@itemprop,'url')]";
@@ -40,7 +33,8 @@ namespace iMovie
 
         private HtmlWeb web = new HtmlWeb();
         private HtmlDocument document = null;
-
+        private HtmlDocument creditsDocument = null;
+         
         /// <summary>
         /// Initializes an instance of IMDB from specified IMDB page
         /// </summary>
@@ -87,6 +81,11 @@ namespace iMovie
             if (!string.IsNullOrEmpty(this.URL) && this.document == null)
             {
                 this.document = this.web.Load(this.URL);
+            }
+
+            if (!string.IsNullOrEmpty(this.CreditsURL) && this.creditsDocument == null)
+            {
+                this.creditsDocument = this.web.Load(this.CreditsURL);
             }
         }
 
@@ -278,11 +277,9 @@ namespace iMovie
         }
 
         private void LoadGenre()
-        { 
+        {
             try
             {
-                string general = "";
-
                 if (this.MoviePage.Source.Length <= 0)
                 {
                     this.MoviePage.Update();
@@ -290,33 +287,36 @@ namespace iMovie
 
                 if (this.MoviePage.Source.Length > 0)
                 {
-                    string source = this.MoviePage.Source;
+                    this.LoadHTML();
 
-                    Regex reg = new Regex(GenreTagPattern, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Singleline);
-                    general = reg.Match(source).Value;
-
-                    if (general.Length > 0)
+                    if (this.document != null)
                     {
-                        this.Genre.Clear();
+                        HtmlNodeCollection potentialNodes = this.document.DocumentNode.
+                            SelectNodes("//div[@class='see-more inline canwrap']//h4[@class='inline']");
 
-                        int ind = -1;
-
-                        general = StringCompare.RemoveDuplicateSpace(general);
-                        general = general.Replace("</div>", "Ξ");
-                        ind = general.IndexOf("Ξ");
-
-                        if (ind > 0)
+                        if (potentialNodes != null && potentialNodes.Count > 0)
                         {
-                            general = general.Substring(0, ind);
-                        }
+                            foreach (HtmlNode potentialItem in potentialNodes)
+                            {
+                                if (potentialItem.InnerText.Trim().ToLower().Contains("genre"))
+                                {
+                                    HtmlNodeCollection genreNodes =
+                                        potentialItem.ParentNode.SelectNodes("a[contains(@href, *)]");
 
-                        reg = new Regex(GenreEachTagPattern, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Singleline);
+                                    if (genreNodes != null && genreNodes.Count > 0)
+                                    {
+                                        this.genre.Clear();
+                                        foreach (HtmlNode genreItem in genreNodes)
+                                        {
+                                            Genre genre = new Genre(0, genreItem.InnerText.Trim());
+                                            this.genre.Add(genre);
+                                        }
 
-                        foreach (Match mat in reg.Matches(general))
-                        {
-                            Genre gen = new Genre(0, mat.Value.Trim());
+                                        break;
+                                    }
 
-                            this.genre.Add(gen);
+                                }
+                            }
                         }
                     }
                 }
@@ -328,41 +328,54 @@ namespace iMovie
         }
 
         private void LoadDirectors()
-        { 
+        {
             try
             {
-                string directorsList = "";
-
-                if (this.MoviePage.Source.Length <= 0)
+                if (this.CreditsPage.Source.Length <= 0)
                 {
-                    this.MoviePage.Update();
+                    this.CreditsPage.Update();
                 }
 
-                if (this.MoviePage.Source.Length > 0)
+                if (this.CreditsPage.Source.Length > 0)
                 {
-                    string source = this.MoviePage.Source;
+                    this.LoadHTML();
 
-                    Regex reg = new Regex(DirectorsListPattern, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Singleline);
-                    directorsList = reg.Match(source).Value;
-
-                    if (directorsList.Length > 0)
+                    if (this.creditsDocument != null)
                     {
-                        this.Directors.Clear();
+                        HtmlNode rootNode = this.creditsDocument.DocumentNode.
+                            SelectSingleNode("//div[@class='header' and @id='fullcredits_content']");
 
-                        directorsList = StringCompare.RemoveDuplicateSpace(directorsList);
-
-                        reg = new Regex(EachDirectorTagPattern, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Singleline);
-
-                        foreach (Match mat in reg.Matches(directorsList))
+                        if (rootNode != null)
                         {
-                            reg = new Regex(DirectorNamePattern, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Singleline);
-                            string name = reg.Match(mat.Value).Value;
+                            HtmlNodeCollection hNodes = rootNode.SelectNodes("h4[@class='dataHeaderWithBorder']");
+                            HtmlNodeCollection tableNodes = rootNode.SelectNodes("table[@class='simpleTable simpleCreditsTable']");
 
-                            reg = new Regex(DirectorURLPattern, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Singleline);
-                            string url = reg.Match(mat.Value).Value;
-                            url = "http://www.imdb.com" + url.Trim().TrimEnd('/');
-                            Person p = new Person(0, name.Trim(), url, "");
-                            this.directors.Add(p);
+                            int directorsIndex = -1;
+                            foreach (HtmlNode potentialItem in hNodes)
+                            {
+                                directorsIndex++;
+                                if (potentialItem.InnerText.Trim().ToLower().Contains("directed"))
+                                {
+                                    HtmlNodeCollection directorNodes =
+                                        tableNodes[directorsIndex].SelectNodes("tbody//tr//td[@class='name']//a[contains(@href, *)]");
+
+                                    if (directorNodes != null && directorNodes.Count > 0)
+                                    {
+                                        this.directors.Clear();
+                                        foreach (HtmlNode directorItem in directorNodes)
+                                        {
+                                            string url = directorItem.Attributes["href"].Value.Trim().TrimStart('/');
+                                            url = url.Split('?')[0].TrimEnd('/');
+                                            string fullURL = this.IMDBBaseURL + "/" + url;
+                                            string name = directorItem.InnerText.Trim();
+                                            Person director = new Person(0, name, fullURL, "");
+                                            this.directors.Add(director);
+                                        }
+                                    }
+
+                                    break;
+                                }
+                            }
                         }
                     }
                 }
@@ -516,7 +529,7 @@ namespace iMovie
         private void LoadLanguage()
         {
             try
-            { 
+            {
                 if (this.MoviePage.Source.Length <= 0)
                 {
                     this.MoviePage.Update();
@@ -524,32 +537,34 @@ namespace iMovie
 
                 if (this.MoviePage.Source.Length > 0)
                 {
-                    string source = this.MoviePage.Source;
+                    this.LoadHTML();
 
-                    Regex reg = new Regex(LanguageTagPattern, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Singleline);
-
-                    string languageTag = reg.Match(source).Value;
-
-                    languageTag = languageTag.Replace("</div>", "Ξ");
-                    int ind = languageTag.IndexOf("Ξ");
-
-                    if (ind > 0)
+                    if (this.document != null)
                     {
-                        languageTag = languageTag.Substring(0, ind);
+                        HtmlNodeCollection potentialNodes = this.document.DocumentNode.
+                            SelectNodes("//div[@class='article' and @id='titleDetails']//div[@class='txt-block']//h4[@class='inline']");
 
-                        if (languageTag.Length > 0)
+                        if (potentialNodes != null && potentialNodes.Count > 0)
                         {
-                            this.Languages.Clear();
-
-                            languageTag = StringCompare.RemoveDuplicateSpace(languageTag);
-
-                            reg = new Regex(LanguageEachTagPattern, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Singleline);
-
-                            foreach (Match mat in reg.Matches(languageTag))
+                            foreach (HtmlNode potentialItem in potentialNodes)
                             {
-                                string lang = mat.Value;
-                                Language l = new Language(0, lang);
-                                this.Languages.Add(l);
+                                if (potentialItem.InnerText.Trim().ToLower().Contains("language"))
+                                {
+                                    HtmlNodeCollection languageNodes =
+                                        potentialItem.ParentNode.SelectNodes("a[contains(@href, *)]");
+
+                                    if (languageNodes != null && languageNodes.Count > 0)
+                                    {
+                                        this.languages.Clear();
+                                        foreach (HtmlNode genreItem in languageNodes)
+                                        {
+                                            Language language = new Language(0, genreItem.InnerText.Trim());
+                                            this.languages.Add(language);
+                                        }
+
+                                        break;
+                                    }
+                                }
                             }
                         }
                     }
@@ -654,7 +669,7 @@ namespace iMovie
         }
 
         /// <summary>
-        /// Gets or sets the URL of IMDB page that represents by this instance
+        /// Gets or sets the URL of IMDB page that represented by this instance.
         /// </summary>
         public string URL
         {
@@ -675,7 +690,6 @@ namespace iMovie
                 {   
                     string normalizedURL = value.Trim().TrimEnd('/');
                     this.MoviePage.URL = normalizedURL;
-                    this.CreditsPage.URL = normalizedURL + "/fullcredits";
 
                     if (this.MoviePage.AutoUpdate == true)
                     {
@@ -685,13 +699,42 @@ namespace iMovie
                         LoadYear();
                         LoadStoryLine();
                         LoadGenre();
-                        LoadDirectors();
-                        LoadDirectorsPhotoLink();
                         LoadLanguage();
                     }
 
+                    this.CreditsURL = this.MoviePage.URL;
+                }
+                catch (Exception ex)
+                {
+                    throw ex;
+                }
+            }
+        }
+
+        public string CreditsURL
+        {
+            get
+            {
+                try
+                {
+                    return this.CreditsPage.URL;
+                }
+                catch (Exception ex)
+                {
+                    throw ex;
+                }
+            }
+            private set
+            {
+                try
+                {
+                    string normalizedURL = value.Trim().TrimEnd('/');
+                    this.CreditsPage.URL = normalizedURL + "/fullcredits";
+
                     if (this.CreditsPage.AutoUpdate == true)
                     {
+                        LoadDirectors();
+                        LoadDirectorsPhotoLink();
                         LoadActors();
                         LoadActorsPhotoLink();
                     }

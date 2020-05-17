@@ -343,5 +343,20 @@ namespace iMovie
                 MessageBox.Show(ex.Message, Messages.MessageBoxTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
+
+        private void chkActorPhoto_CheckedChanged(object sender, EventArgs e)
+        {
+            try
+            {
+                if (chkActorPhoto.Checked == true)
+                {
+                    MessageBox.Show(Messages.CountriesFiltered.Replace(@"\n", Environment.NewLine), Messages.MessageBoxTitle, MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, Messages.MessageBoxTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
     }
 }

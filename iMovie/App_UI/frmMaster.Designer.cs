@@ -172,8 +172,8 @@
             this.mnuStripRootPath});
             this.mnuStripInsert.Name = "mnuStripInsert";
             this.mnuStripInsert.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Alt | System.Windows.Forms.Keys.I)));
-            this.mnuStripInsert.Size = new System.Drawing.Size(55, 20);
-            this.mnuStripInsert.Text = "INSERT";
+            this.mnuStripInsert.Size = new System.Drawing.Size(69, 20);
+            this.mnuStripInsert.Text = "MANAGE";
             // 
             // mnuStripMovie
             // 
@@ -182,34 +182,34 @@
             this.mnuStripBatchMovie,
             this.mnuStripOnlineMovie});
             this.mnuStripMovie.Name = "mnuStripMovie";
-            this.mnuStripMovie.Size = new System.Drawing.Size(162, 22);
+            this.mnuStripMovie.Size = new System.Drawing.Size(180, 22);
             this.mnuStripMovie.Text = "Movie";
             // 
             // mnuStripSingleMovie
             // 
             this.mnuStripSingleMovie.Name = "mnuStripSingleMovie";
-            this.mnuStripSingleMovie.Size = new System.Drawing.Size(170, 22);
+            this.mnuStripSingleMovie.Size = new System.Drawing.Size(180, 22);
             this.mnuStripSingleMovie.Text = "Force Single Insert";
             this.mnuStripSingleMovie.Click += new System.EventHandler(this.mnuStripSingleMovie_Click);
             // 
             // mnuStripBatchMovie
             // 
             this.mnuStripBatchMovie.Name = "mnuStripBatchMovie";
-            this.mnuStripBatchMovie.Size = new System.Drawing.Size(170, 22);
+            this.mnuStripBatchMovie.Size = new System.Drawing.Size(180, 22);
             this.mnuStripBatchMovie.Text = "Batch Insert";
             this.mnuStripBatchMovie.Click += new System.EventHandler(this.mnuStripBatchMovie_Click);
             // 
             // mnuStripOnlineMovie
             // 
             this.mnuStripOnlineMovie.Name = "mnuStripOnlineMovie";
-            this.mnuStripOnlineMovie.Size = new System.Drawing.Size(170, 22);
+            this.mnuStripOnlineMovie.Size = new System.Drawing.Size(180, 22);
             this.mnuStripOnlineMovie.Text = "Online Update";
             this.mnuStripOnlineMovie.Click += new System.EventHandler(this.mnuStripOnlineMovie_Click);
             // 
             // mnuStripRootPath
             // 
             this.mnuStripRootPath.Name = "mnuStripRootPath";
-            this.mnuStripRootPath.Size = new System.Drawing.Size(162, 22);
+            this.mnuStripRootPath.Size = new System.Drawing.Size(180, 22);
             this.mnuStripRootPath.Text = "Movie Root Path";
             this.mnuStripRootPath.Click += new System.EventHandler(this.mnuStripRootPath_Click);
             // 
@@ -238,28 +238,28 @@
             // 
             this.mnuStripFavorite.Image = global::iMovie.Properties.Resources.menu_favorite;
             this.mnuStripFavorite.Name = "mnuStripFavorite";
-            this.mnuStripFavorite.Size = new System.Drawing.Size(218, 22);
+            this.mnuStripFavorite.Size = new System.Drawing.Size(217, 22);
             this.mnuStripFavorite.Text = "Favorite List";
             this.mnuStripFavorite.Click += new System.EventHandler(this.mnuStripFavorite_Click);
             // 
             // mnuStripAllMovie
             // 
             this.mnuStripAllMovie.Name = "mnuStripAllMovie";
-            this.mnuStripAllMovie.Size = new System.Drawing.Size(218, 22);
+            this.mnuStripAllMovie.Size = new System.Drawing.Size(217, 22);
             this.mnuStripAllMovie.Text = "All Movies List";
             this.mnuStripAllMovie.Click += new System.EventHandler(this.mnuStripAllMovie_Click);
             // 
             // mnuStripOfflineMovie
             // 
             this.mnuStripOfflineMovie.Name = "mnuStripOfflineMovie";
-            this.mnuStripOfflineMovie.Size = new System.Drawing.Size(218, 22);
+            this.mnuStripOfflineMovie.Size = new System.Drawing.Size(217, 22);
             this.mnuStripOfflineMovie.Text = "Offline Movies List";
             this.mnuStripOfflineMovie.Click += new System.EventHandler(this.mnuStripOfflineMovie_Click);
             // 
             // copyRequestListToolStripMenuItem
             // 
             this.copyRequestListToolStripMenuItem.Name = "copyRequestListToolStripMenuItem";
-            this.copyRequestListToolStripMenuItem.Size = new System.Drawing.Size(218, 22);
+            this.copyRequestListToolStripMenuItem.Size = new System.Drawing.Size(217, 22);
             this.copyRequestListToolStripMenuItem.Text = "Copy Request List";
             this.copyRequestListToolStripMenuItem.Click += new System.EventHandler(this.copyRequestListToolStripMenuItem_Click);
             // 
@@ -267,52 +267,52 @@
             // 
             this.mnuStripDuplicate.Image = global::iMovie.Properties.Resources.duplicate_menu;
             this.mnuStripDuplicate.Name = "mnuStripDuplicate";
-            this.mnuStripDuplicate.Size = new System.Drawing.Size(218, 22);
+            this.mnuStripDuplicate.Size = new System.Drawing.Size(217, 22);
             this.mnuStripDuplicate.Text = "Duplicate Movies (Approx.)";
             this.mnuStripDuplicate.Click += new System.EventHandler(this.mnuStripDuplicate_Click);
             // 
             // toolStripSeparator8
             // 
             this.toolStripSeparator8.Name = "toolStripSeparator8";
-            this.toolStripSeparator8.Size = new System.Drawing.Size(215, 6);
+            this.toolStripSeparator8.Size = new System.Drawing.Size(214, 6);
             // 
             // mnuStripSearch
             // 
             this.mnuStripSearch.Image = global::iMovie.Properties.Resources.search;
             this.mnuStripSearch.Name = "mnuStripSearch";
-            this.mnuStripSearch.Size = new System.Drawing.Size(218, 22);
+            this.mnuStripSearch.Size = new System.Drawing.Size(217, 22);
             this.mnuStripSearch.Text = "Search Area";
             this.mnuStripSearch.Click += new System.EventHandler(this.mnuStripSearch_Click);
             // 
             // mnuStripMain
             // 
             this.mnuStripMain.Name = "mnuStripMain";
-            this.mnuStripMain.Size = new System.Drawing.Size(218, 22);
+            this.mnuStripMain.Size = new System.Drawing.Size(217, 22);
             this.mnuStripMain.Text = "Main Window";
             this.mnuStripMain.Click += new System.EventHandler(this.mnuStripMain_Click);
             // 
             // toolStripSeparator3
             // 
             this.toolStripSeparator3.Name = "toolStripSeparator3";
-            this.toolStripSeparator3.Size = new System.Drawing.Size(215, 6);
+            this.toolStripSeparator3.Size = new System.Drawing.Size(214, 6);
             // 
             // mnuStripQuick
             // 
             this.mnuStripQuick.Image = global::iMovie.Properties.Resources.menu_random;
             this.mnuStripQuick.Name = "mnuStripQuick";
-            this.mnuStripQuick.Size = new System.Drawing.Size(218, 22);
+            this.mnuStripQuick.Size = new System.Drawing.Size(217, 22);
             this.mnuStripQuick.Text = "Quick Suggestion";
             this.mnuStripQuick.Click += new System.EventHandler(this.mnuStripQuick_Click);
             // 
             // toolStripSeparator2
             // 
             this.toolStripSeparator2.Name = "toolStripSeparator2";
-            this.toolStripSeparator2.Size = new System.Drawing.Size(215, 6);
+            this.toolStripSeparator2.Size = new System.Drawing.Size(214, 6);
             // 
             // mnuStripReportConsole
             // 
             this.mnuStripReportConsole.Name = "mnuStripReportConsole";
-            this.mnuStripReportConsole.Size = new System.Drawing.Size(218, 22);
+            this.mnuStripReportConsole.Size = new System.Drawing.Size(217, 22);
             this.mnuStripReportConsole.Text = "SQL Report Console";
             this.mnuStripReportConsole.Click += new System.EventHandler(this.mnuStripReportConsole_Click);
             // 
@@ -320,7 +320,7 @@
             // 
             this.mnuStripStats.Image = global::iMovie.Properties.Resources.menu_stats;
             this.mnuStripStats.Name = "mnuStripStats";
-            this.mnuStripStats.Size = new System.Drawing.Size(218, 22);
+            this.mnuStripStats.Size = new System.Drawing.Size(217, 22);
             this.mnuStripStats.Text = "Statistics";
             this.mnuStripStats.Click += new System.EventHandler(this.mnuStripStats_Click);
             // 

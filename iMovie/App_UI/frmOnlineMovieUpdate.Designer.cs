@@ -123,7 +123,6 @@
             // chkActorPhoto
             // 
             this.chkActorPhoto.AutoSize = true;
-            this.chkActorPhoto.Enabled = false;
             this.chkActorPhoto.Location = new System.Drawing.Point(273, 107);
             this.chkActorPhoto.Name = "chkActorPhoto";
             this.chkActorPhoto.Size = new System.Drawing.Size(86, 17);
@@ -169,13 +168,15 @@
             // chkActors
             // 
             this.chkActors.AutoSize = true;
-            this.chkActors.Enabled = false;
+            this.chkActors.Checked = true;
+            this.chkActors.CheckState = System.Windows.Forms.CheckState.Checked;
             this.chkActors.Location = new System.Drawing.Point(156, 107);
             this.chkActors.Name = "chkActors";
             this.chkActors.Size = new System.Drawing.Size(56, 17);
             this.chkActors.TabIndex = 9;
             this.chkActors.Text = "Actors";
             this.chkActors.UseVisualStyleBackColor = true;
+            this.chkActorPhoto.CheckedChanged += new System.EventHandler(this.chkActorPhoto_CheckedChanged);
             // 
             // chkGenre
             // 

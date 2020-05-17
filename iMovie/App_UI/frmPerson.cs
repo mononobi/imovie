@@ -168,7 +168,7 @@ namespace iMovie
             {
                 if (this.person.IMDBLink.Length > 0)
                 {
-                    Process.Start("iexplore.exe", this.person.IMDBLink);
+                    Process.Start(this.person.IMDBLink);
                 }
                 else
                 {
