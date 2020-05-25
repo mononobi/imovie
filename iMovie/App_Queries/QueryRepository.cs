@@ -75,14 +75,7 @@ namespace iMovie
         public const string Genre_Get_By_Name =
         @"select distinct Genre.*
         from Genre
-        where Genre.GenreName like @GenreName
-        or Genre.GenreName like '%' || @GenreName || '%'
-        or Genre.GenreName like '%' || @GenreName
-        or Genre.GenreName like @GenreName || '%'
-        or @GenreName like Genre.GenreName
-        or @GenreName like '%' || Genre.GenreName || '%'
-        or @GenreName like '%' || Genre.GenreName
-        or @GenreName like Genre.GenreName || '%'
+        where lower(Genre.GenreName) = lower(@GenreName)
         order by GenreName asc";
 
         public const string Genre_Get_List =
@@ -147,6 +140,12 @@ namespace iMovie
         inner join Movie_Language
         on Movie_Language.LanguageID=_Language.LanguageID
         where Movie_Language.MovieID=@MovieID
+        order by LanguageName asc";
+
+        public const string Language_Get_By_Name =
+        @"select distinct _Language.*
+        from _Language
+        where lower(_Language.LanguageName) = lower(@LanguageName)
         order by LanguageName asc";
 
         public const string Language_Get_List =
@@ -249,6 +248,10 @@ namespace iMovie
         @"delete from Movie_Director
         where MovieID=@MovieID";
 
+        public const string Movie_Actor_Delete_All =
+        @"delete from Movie_Actor
+        where MovieID=@MovieID";
+
         public const string Movie_Director_Insert =
         @"insert into Movie_Director
         values(@MovieID,@PersonID)";
@@ -257,6 +260,10 @@ namespace iMovie
         @"delete from Movie_Genre
         where MovieID=@MovieID
         and GenreID=@GenreID";
+
+        public const string Movie_Genre_Delete_All =
+        @"delete from Movie_Genre
+        where MovieID=@MovieID";
 
         public const string Movie_Genre_Insert =
         @"insert into Movie_Genre
@@ -451,6 +458,10 @@ namespace iMovie
         where MovieID=@MovieID
         and LanguageID=@LanguageID";
 
+        public const string Movie_Language_Delete_All =
+        @"delete from Movie_Language
+        where MovieID=@MovieID";
+
         public const string Movie_Language_Insert =
         @"insert into Movie_Language
         values(@MovieID,@LanguageID)";
@@ -521,7 +532,7 @@ namespace iMovie
         public const string Person_Get_By_IMDBLink =
         @"select Person.* , Person.PersonFName || ' ' || Person.PersonLName as FullName
         from Person 
-        where Person.IMDBLink=@IMDBLink
+        where lower(Person.IMDBLink)=lower(@IMDBLink)
         order by FullName";
 
         public const string Person_Get_By_Name =
@@ -540,7 +551,7 @@ namespace iMovie
         public const string Person_Get_By_Name_Exact =
         @"select Person.*, Person.PersonFName || ' ' || Person.PersonLName as FullName
         from Person
-        where Person.PersonFName || ' ' || Person.PersonLName = @FullName
+        where lower(Person.PersonFName || ' ' || Person.PersonLName) = lower(@FullName)
         order by FullName asc";
 
         public const string Person_Get_By_PersonID =
@@ -564,7 +575,9 @@ namespace iMovie
 
         select count(*) as IsValid, 'Director' as Type
         from Director
-        where Director.PersonID=@PersonID";
+        where Director.PersonID=@PersonID
+
+        order by Type asc";
 
         public const string Person_Insert =
         @"insert into Person(PersonFName,PersonLName,IMDBLink,PhotoLink)

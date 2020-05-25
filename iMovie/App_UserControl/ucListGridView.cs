@@ -1519,7 +1519,8 @@ namespace iMovie
                                                     m.FetchSingleMovie(dt);
 
                                                     enUpdateResult res = enUpdateResult.UpdateError;
-                                                    res = Movie_SP.UpdateOnline(m, true, true, true, true, true, true, true, true, true, true, false, false, null);
+                                                    res = Movie_SP.UpdateOnline(m, true, true, true, true, true, true, true,
+                                                        true, true, true, true, true, false, false, false, null);
 
                                                     if (res == enUpdateResult.Updated)
                                                     {
@@ -1787,7 +1788,8 @@ namespace iMovie
                                                 m.FetchSingleMovie(dt);
 
                                                 enUpdateResult res = enUpdateResult.UpdateError;
-                                                res = Movie_SP.UpdateOnline(m, true, true, true, true, true, true, true, true, true, true, true, false, null);
+                                                res = Movie_SP.UpdateOnline(m, true, true, true, true, true, true,
+                                                    true, true, true, true, true, true, true, false, false, null);
 
                                                 if (res == enUpdateResult.Updated)
                                                 {
@@ -1883,7 +1885,6 @@ namespace iMovie
                                         if (dt.Rows.Count > 0 && url.url.Length > 0)
                                         {
                                             string lastUrl = m.IMDBLink;
-                                            m.IMDBLink = url.url;
 
                                             try
                                             {
@@ -1913,7 +1914,8 @@ namespace iMovie
                                                     if (this.ExitRequest == false)
                                                     {
                                                         enUpdateResult res = enUpdateResult.UpdateError;
-                                                        res = Movie_SP.UpdateOnlineFromIMDb(m, true, true, true, true, true, true, true, true, true, false, false, null);
+                                                        res = Movie_SP.UpdateOnlineFromIMDb(url.url, m, true, true, true, true, true,
+                                                            true, true, true, true, true, true, false, false, null);
 
                                                         if (res == enUpdateResult.Updated)
                                                         {

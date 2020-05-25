@@ -1,13 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Data;
 using System.Windows.Forms;
 using Microsoft.VisualBasic.PowerPacks;
 using System.Net;
-using System.Drawing.Text;
 using System.Drawing;
-using System.IO;
 
 namespace iMovie
 {
@@ -585,49 +581,30 @@ namespace iMovie
         {
             try
             {
-                try
-                {
-                    IPHostEntry IPH = Dns.GetHostEntry("www.google.com");
-                    return true; // connected
+                IPHostEntry IPH = Dns.GetHostEntry("www.google.com");
+                return !string.IsNullOrEmpty(IPH?.HostName);
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
+        }
 
-                    //ICredentials credit = new NetworkCredential("iruser425506", "491065");
-                    //WebProxy myProxy = new WebProxy("127.0.0.1", 8080);
-                    //myProxy.Credentials = credit;
-                    //WebRequest.DefaultWebProxy = myProxy;
-                    //HttpWebRequest myRequest = (HttpWebRequest)WebRequest.Create("http://google.com");
-                    //myProxy.BypassProxyOnLocal = false;
-                    //myRequest.Proxy = myProxy;
-                    //myRequest.AllowAutoRedirect = true;
-                    //myRequest.Method = "GET";
-                    //myRequest.Timeout = 15000;
-                    //myRequest.ReadWriteTimeout = 15000;
+        public static bool IsAvailable(string url)
+        {
+            try
+            {
+                HttpWebRequest request = WebRequest.Create(url) as HttpWebRequest;
+                request.Method = "HEAD";
+                HttpWebResponse response = request.GetResponse() as HttpWebResponse;
+                bool result = response?.StatusCode == HttpStatusCode.OK;
+                response.Close();
 
-                    //HttpWebResponse myResponse = (HttpWebResponse)myRequest.GetResponse();
-
-                    //if (myResponse.StatusCode == HttpStatusCode.OK)
-                    //{
-                    //    StreamReader sr = new StreamReader(myResponse.GetResponseStream(), System.Text.Encoding.UTF8);
-                    //    string result = sr.ReadToEnd();
-                    //    sr.Close();
-                    //    myResponse.Close();
-
-                    //    return true; // connected
-                    //}
-                    //else
-                    //{
-                    //    return false; // not connected
-                    //}
-                }
-                catch (Exception ex)
-                {
-                    IPHostEntry IPH = Dns.GetHostEntry("www.blogfa.com");
-
-                    return true; // connected
-                }
+                return result;
             }
             catch
             {
-                return false; // not connected
+                return false;
             }
         }
 

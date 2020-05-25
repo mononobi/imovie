@@ -47,11 +47,15 @@ namespace iMovie
                         bool genre = chkGenre.Checked;
                         bool director = chkDirector.Checked;
                         bool directorPhoto = chkDirectorPhoto.Checked;
+                        bool actor = chkActors.Checked;
+                        bool actorPhoto = chkActorPhoto.Checked;
                         bool language = chkLanguage.Checked;
 
                         DataTable dtMovies = new DataTable();
 
-                        if (image == true || rate == true || link == true || year == true || duration == true || story == true || genre == true || director == true || directorPhoto == true || language == true)
+                        if (image == true || rate == true || link == true || year == true || duration == true || 
+                            story == true || genre == true || director == true || directorPhoto == true || 
+                            language == true || actor == true || actorPhoto == true)
                         {
                             string logName = "iMovie Update Log [" + Helper.GetShortDateTimeString().Replace(":", "-") + "].txt";
                             iMovieBase.log.Path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), logName);
@@ -82,7 +86,8 @@ namespace iMovie
                                             DelegateName dlName = new DelegateName(GetCurrentName);
                                             BeginInvoke(dlName, "Updating: " + m.FullTitle);
 
-                                            result = Movie_SP.UpdateOnline(m, image, rate, link, year, duration, story, genre, director, directorPhoto, language, ignore, true, null);
+                                            result = Movie_SP.UpdateOnline(m, image, rate, link, year, duration, story, genre, 
+                                                director, directorPhoto, language, actor, actorPhoto, ignore, true, false, null);
 
                                             if (result == enUpdateResult.Updated)
                                             {

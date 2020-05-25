@@ -1,101 +1,54 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Web;
-using System.IO;
 using System.Net;
 using System.Text.RegularExpressions;
-using System.Threading;
+using HtmlAgilityPack;
 
 namespace iMovie
 { 
-    public class WebPage
+    public class CouldNotLoadWebPageException : Exception
     {
-        private const int RetryMinValue = 1;
-        private const int RetryMaxValue = 10;
-        private const int SleepValue = 600;
+        public CouldNotLoadWebPageException(string message, 
+            Exception innerException) : base(message, innerException)
+        {
+        }
+    }
 
-        private string source = "";
-        private string url = "";
-        private bool autoUpdate = true;
-        private int retryCount = 3;
+    public abstract class WebPage
+    {
+        private string url = string.Empty;
 
         /// <summary>
-        /// Initializes an instance of WebPage with specified values
+        /// Initializes an instance of WebPage.
         /// </summary>
-        /// <param name="autoUpdate">
-        /// if set to true, after each url changing, the webpage source code will be updated immediately.
-        /// otherwise false</param>
+        public WebPage()
+        { 
+        }
+
+        /// <summary>
+        /// Initializes an instance of WebPage.
+        /// </summary>
+        /// <param name="url">url to load its content.</param>
+        public WebPage(string url)
+        {
+            this.URL = url;
+        }
+
+        /// <summary>
+        /// Downloads the file from its URL into specified destination.
+        /// </summary>
         /// <param name="url">
-        /// The url to retrieve webpage from</param>
-        public WebPage(bool autoUpdate, string url)
+        /// URL of the file</param>
+        /// <param name="targetPath">
+        /// Destination path to save file</param>
+        public static void DownloadFile(string url, string targetName)
         {
-            try
+            if (string.IsNullOrEmpty(url))
             {
-                this.AutoUpdate = autoUpdate;
-                this.URL = url;
+                throw new Exception(Messages.InvalidFileURL);
             }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
-        }
 
-        /// <summary>
-        /// Initializes an instance of WebPage with empty url
-        /// </summary>
-        /// <param name="autoUpdate">
-        /// if set to true, after each url changing, the webpage source code will be updated immediately.
-        /// otherwise false</param>
-        public WebPage(bool autoUpdate)
-        {
-            try
-            {
-                this.AutoUpdate = autoUpdate;
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
-        }
-
-        /// <summary>
-        /// Enforces this instance to update it's data from it's URL
-        /// </summary>
-        public void Update()
-        {
-            try
-            {
-                bool last = this.AutoUpdate;
-                string temp = this.URL;
-                this.AutoUpdate = false;
-                this.URL = ".";
-                this.AutoUpdate = true;
-                this.URL = temp;
-                this.AutoUpdate = last;
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
-        }
-
-        /// <summary>
-        /// Gets the source code of this WebPage
-        /// </summary>
-        public string Source
-        {
-            get
-            {
-                try
-                {
-                    return this.source;
-                }
-                catch (Exception ex)
-                {
-                    throw ex;
-                }
-            }
+            WebClient webClient = new WebClient(); 
+            webClient.DownloadFile(url, targetName);
         }
 
         /// <summary>
@@ -106,188 +59,102 @@ namespace iMovie
         {
             get
             {
-                try
-                { 
-                    return this.url;
-                }
-                catch (Exception ex)
-                {
-                    throw ex;
-                }
+                return this.url;
             }
             set
             {
-                try
+                if (string.IsNullOrEmpty(value))
                 {
-                    if (value.Length > 0)
-                    {
-                        Regex reg1 = new Regex(@"^www.*");
-                        Regex reg2 = new Regex(@"^http://.*");
-                        Regex reg3 = new Regex(@"^https://.*");
-
-                        if (reg2.IsMatch(value) == true || reg3.IsMatch(value) == true)
-                        {
-                            // OK
-                        }
-                        else if (reg1.IsMatch(value) == true)
-                        {
-                            value = @"http://" + value;
-                        }
-                        else
-                        {
-                            value = @"http://" + value;
-                        }
-
-                        if (this.AutoUpdate == true)
-                        {
-                            if (value != this.url && value != ".")
-                            {
-                                string result = GetPageSourceCode(value);
-
-                                if (result.Length > 0)
-                                {
-                                    this.url = value;
-                                    this.source = result;
-                                }
-                                else
-                                {
-                                    throw new Exception(Messages.CouldNotGetPageSource + Environment.NewLine + value);
-                                }
-                            }
-                            else if (value == ".")
-                            {
-                                this.url = value;
-                            }
-                        }
-                        else
-                        {
-                            this.url = value;
-                        }
-                    }
+                    throw new Exception(Messages.InvalidPageURL);
                 }
-                catch (Exception ex)
+
+                Regex reg1 = new Regex(@"^www.*");
+                Regex reg2 = new Regex(@"^http://.*");
+                Regex reg3 = new Regex(@"^https://.*");
+
+                if (reg2.IsMatch(value) == true || reg3.IsMatch(value) == true)
                 {
-                    throw ex;
+                    // OK
                 }
+                else if (reg1.IsMatch(value) == true)
+                {
+                    value = @"http://" + value;
+                }
+                else
+                {
+                    value = @"http://" + value;
+                }
+
+                this.url = value;
             }
         }
 
-        private string GetPageSourceCode(string url)
+        /// <summary>
+        /// Loads the content of given url into this instance.
+        /// </summary>
+        /// <param name="url">url to load its content.</param>
+        protected void Load(string url)
         {
-            try
+            if (this.WebDocument == null || url != this.URL)
             {
-                int count = this.retryCount;
-                string result = "";
+                this.URL = url;
+                HtmlDocument result = this.LoadDocument(this.url);
 
-                while (count > 0)
+                if (result == null)
                 {
-                    try
-                    {
-                        count--;
-
-                        HttpWebRequest myRequest = (HttpWebRequest)WebRequest.Create(url);
-                        myRequest.AllowAutoRedirect = true;
-                        myRequest.Method = "GET";
-                        myRequest.Timeout = 15000;
-                        myRequest.ReadWriteTimeout = 15000;
-
-                        HttpWebResponse myResponse = (HttpWebResponse)myRequest.GetResponse();
-
-                        if (myResponse.StatusCode == HttpStatusCode.OK)
-                        {
-                            StreamReader sr = new StreamReader(myResponse.GetResponseStream(), System.Text.Encoding.UTF8);
-                            result = sr.ReadToEnd();
-                            sr.Close();
-                            myResponse.Close();
-
-                            break;
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        if (count == 0)
-                        {
-                            throw ex;
-                        } 
-                    }
-
-                    Thread.Sleep(SleepValue);
+                    throw new Exception(Messages.CouldNotLoadWebPage + Environment.NewLine + this.url);
                 }
 
-                return Helper.RemoveExtraCharacters(result);
+                this.WebDocument = result;
+                this.LoadExtra();
+            }
+        }
+
+        /// <summary>
+        /// Loads the page content from its url.
+        /// </summary>
+        protected void Load()
+        {
+            if (string.IsNullOrEmpty(this.URL))
+            {
+                throw new Exception(Messages.InvalidPageURL);
+            }
+
+            this.Load(this.URL);
+        }
+
+        protected virtual void LoadExtra()
+        {
+        }
+
+        protected HtmlNode GetSingleNode(string xpath)
+        {
+            return this.WebDocument?.DocumentNode.SelectSingleNode(xpath);
+        }
+
+        protected HtmlNodeCollection GetMultiNodes(string xpath)
+        {
+            return this.WebDocument?.DocumentNode.SelectNodes(xpath);
+        }
+
+        protected HtmlDocument LoadDocument(string url)
+        {
+            if (string.IsNullOrEmpty(url))
+            {
+                throw new Exception(Messages.InvalidPageURL);
+            }
+
+            try
+            {
+                return this.WebManager.Load(url);
             }
             catch (Exception ex)
             {
-                throw ex;
+                throw new CouldNotLoadWebPageException(ex.Message, ex);
             }
         }
 
-        /// <summary>
-        /// Gets or sets a value indicating that the source code of this WebPage 
-        /// should be updated after each url changing
-        /// </summary>
-        public bool AutoUpdate
-        {
-            get
-            {
-                try
-                {
-                    return this.autoUpdate;
-                }
-                catch (Exception ex)
-                {
-                    throw ex;
-                }
-            }
-            set
-            {
-                try
-                {
-                    this.autoUpdate = value;
-                }
-                catch (Exception ex)
-                {
-                    throw ex;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets the maximum number of attempts to get the webpage source code if not succeeded, value between 1 to 10
-        /// </summary>
-        public int RetryCount
-        {
-            get
-            {
-                try
-                {
-                    return this.retryCount;
-                }
-                catch (Exception ex)
-                {
-                    throw ex;
-                }
-            }
-            set
-            {
-                try
-                {
-                    if (value < RetryMinValue)
-                    {
-                        value = RetryMinValue;
-                    }
-                    else if(value > RetryMaxValue)
-                    {
-                        value = RetryMaxValue;
-                    }
-     
-                    this.retryCount = value;
-                }
-                catch (Exception ex)
-                {
-                    throw ex;
-                }
-            }
-        }
+        private HtmlDocument WebDocument { get; set; } = null;
+        private HtmlWeb WebManager { get; set; } = new HtmlWeb();
     }
 }

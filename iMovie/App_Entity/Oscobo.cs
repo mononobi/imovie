@@ -1,167 +1,38 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.IO;
 using System.Text.RegularExpressions;
+using HtmlAgilityPack;
 
 namespace iMovie
 {
-    public class Oscobo 
+    public class Oscobo : WebPage
     {
-        private string SearchQueryPattern = @"https://www.oscobo.com/search.php?q=@QUERY@";
-        private string URLTagPattern = @"<div class=""line cite"">( )*[^ <>]+( )*</div>";
-        private string ExactTitleURLPattern = @"www.imdb.com/title/tt[\d]+[/]{0,1}";
-        private string[] ResultItemsDelim = { @"<div class=""result"">" };
-        private string[] ExtraChars = { "<strong>", "</strong>", "<b>", "</b>", "&nbsp;" };
+        private const string SearchQueryPattern = @"https://www.oscobo.com/search.php?q={0}";
+        private const string SearchResultXPath = "//div[@id='results-list']//div[@class='result']" +
+            "//a[@target='_blank']//div[@class='line cite']";
 
-        private WebPage searchResultPage = new WebPage(false);
-        private IMDb imdbMoviePage = new IMDb(false);
-        private string firstResultItemTag = "";
-        private string searchText = "";
+        private string searchText = string.Empty;
 
         /// <summary>
         /// Initializes an instance of Oscobo with specified search query from oscobo.com
         /// </summary>
-        /// <param name="autoUpdateSearch">
-        /// Value indicating that on each Search text changing should update 
-        /// the search result page of this instance immediately</param>
-        /// <param name="text">
-        /// Text to search for in oscobo.com and get the result page</param>
-        public Oscobo(bool autoUpdateSearch, string text)
+        public Oscobo() : base()
         {  
-            try
-            {
-                this.searchResultPage.AutoUpdate = autoUpdateSearch;
-                this.SearchText = text;
-            }
-            catch (Exception ex)
-            {
-                throw ex; 
-            }
         }
 
-        /// <summary>
-        /// Initializes an instance of Oscobo with specified values
-        /// without getting result from google
-        /// </summary>
-        /// <param name="autoUpdateSearch">
-        /// Value indicating that on each Search text changing should update 
-        /// the search result page of this instance immediately</param>
-        public Oscobo(bool autoUpdateSearch)
+        public string Search(string text)
         {
-            try
-            {
-                this.searchResultPage.AutoUpdate = autoUpdateSearch;
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
+            this.SearchText = text;
+            this.Load(this.FullSearchQuery);
+            this.DoSearch();
+            return this.FoundedURL;
         }
 
-        /// <summary>
-        /// Enforces this instance to update it's data from it's search query result
-        /// </summary>
-        public void Update()
+        public string Search(string text, Regex pattern, int limit)
         {
-            try
-            {
-                bool last = this.SearchResultPage.AutoUpdate;
-                this.SearchResultPage.AutoUpdate = true;
-                this.SearchText = this.SearchText;
-                this.SearchResultPage.AutoUpdate = last;
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
-        }
-
-        private void LoadSearchResult()
-        { 
-            try
-            {
-                this.searchResultPage = new WebPage(this.SearchResultPage.AutoUpdate, this.FullSearchQuery);
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
-        }
-
-        private void LoadFirstResultItemTag()
-        {
-            try
-            {
-                if (this.SearchResultPage.Source.Length <= 0)
-                {
-                    this.LoadSearchResult();
-                }
-
-                if (this.SearchResultPage.Source.Length > 0)
-                {
-                    string source = this.SearchResultPage.Source;
-
-                    foreach (string extra in this.ExtraChars)
-                    {
-                        source = Regex.Replace(source, extra, "", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Singleline);
-                    }
-
-                    string[] temp = source.Split(this.ResultItemsDelim, StringSplitOptions.RemoveEmptyEntries);
-
-                    if (temp.Length > 1)
-                    {
-                        this.firstResultItemTag = temp[1];
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
-        }
-
-        private void LoadURL()
-        {
-            try
-            {
-                if (this.SearchResultPage.Source.Length <= 0)
-                {
-                    this.LoadSearchResult();
-                    this.LoadFirstResultItemTag();
-                }
-
-                if (this.FirstResultItemTag.Length > 0)
-                {
-                    string url = "";
-                    string resultTag = this.FirstResultItemTag;
-
-                    foreach (string extra in this.ExtraChars)
-                    {
-                        resultTag = Regex.Replace(resultTag, extra, "", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Singleline);
-                    }
-
-                    Regex reg = new Regex(URLTagPattern, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Singleline);
-                    url = reg.Match(resultTag).Value;
-
-                    url = url.Replace(@"<div class=""line cite"">", "");
-                    url = url.Replace("</div>", "");
-                    url = url.Trim().Replace(" ", "");
-
-                    string titleURL = "";
-
-                    Regex reg2 = new Regex(ExactTitleURLPattern, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Singleline);
-                    titleURL = reg2.Match(url).Value;
-                    titleURL = titleURL.Trim();
-
-                    this.IMDBMoviePage.MoviePage.AutoUpdate = false;
-                    this.IMDBMoviePage.URL = titleURL.TrimEnd('/');
-                }
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
+            this.SearchText = text;
+            this.Load(this.FullSearchQuery);
+            this.DoSearch(pattern, limit);
+            return this.FoundedURL;
         }
 
         /// <summary>
@@ -171,68 +42,16 @@ namespace iMovie
         {
             get
             {
-                try
-                {
-                    return this.searchText;
-                }
-                catch (Exception ex)
-                {
-                    throw ex;
-                }
+                return this.searchText;
             }
             set
             {
-                try
+                if (string.IsNullOrEmpty(value))
                 {
-                    this.searchText = value.Trim();
+                    throw new Exception(Messages.InvalidSearchText);
+                }
 
-                    if (this.SearchResultPage.AutoUpdate == true)
-                    {
-                        this.LoadSearchResult();
-                        this.LoadFirstResultItemTag();
-                        this.LoadURL();
-                    }
-                }
-                catch (Exception ex)
-                {
-                    throw ex;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Gets the IMDB component that represents IMDB page of requested movie
-        /// </summary>
-        public IMDb IMDBMoviePage
-        { 
-            get
-            {
-                try
-                {
-                    return this.imdbMoviePage;
-                }
-                catch (Exception ex)
-                {
-                    throw ex;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Gets the WebPage that represents oscobo.com search results for requested query
-        /// </summary>
-        public WebPage SearchResultPage
-        {
-            get
-            {
-                try
-                {
-                    return this.searchResultPage;
-                }
-                catch (Exception ex)
-                {
-                    throw ex;
-                }
+                this.searchText = value.Trim();
             }
         }
 
@@ -243,94 +62,53 @@ namespace iMovie
         {
             get
             {
-                try
-                {
-                    return SearchQueryPattern.Replace("@QUERY@", this.SearchText);
-                }
-                catch (Exception ex)
-                {
-                    throw ex;
-                }
+                return string.Format(SearchQueryPattern, this.SearchText);
             }
         }
 
+        public string FoundedURL { get; private set; } = string.Empty;
+
+        private bool DoSearch()
+        {
+            HtmlNode node = this.GetSingleNode(Oscobo.SearchResultXPath);
+            string result = node?.InnerText.Trim();
+
+            if (!string.IsNullOrEmpty(result))
+            {
+                this.FoundedURL = result;
+                return true;
+            }
+
+            return false;
+        }
+        
         /// <summary>
-        /// Gets the first result item found in oscobo.com for the searched query
+        /// Enforces this instance to load its data from its search query result.
         /// </summary>
-        public string FirstResultItemTag
+        private bool DoSearch(Regex pattern, int limit = 1) 
         {
-            get 
+            limit = Math.Min(limit, 5);
+            HtmlNodeCollection nodes = this.GetMultiNodes(Oscobo.SearchResultXPath);
+            if (nodes != null && nodes.Count > 0)
             {
-                try
+                foreach (HtmlNode item in nodes)
                 {
-                    return this.firstResultItemTag;
-                }
-                catch (Exception ex)
-                {
-                    throw ex;
-                }
-            }
-        }
-
-        public bool IsFullyLoaded
-        {
-            get
-            {
-                try
-                {
-                    return this.HasURL;
-                }
-                catch (Exception ex)
-                {
-                    throw ex;
-                }
-            }
-        }
-
-        public bool HasRate
-        {
-            get
-            {
-                return false;
-            }
-        }
-
-        public bool HasYear
-        {
-            get
-            {
-                return false;
-            }
-        }
-
-        public bool HasURL
-        {
-            get
-            {
-                try
-                {
-                    if (this.IMDBMoviePage.URL.Length > 0)
+                    if (limit <= 0)
                     {
+                        break;
+                    }
+
+                    limit--;
+                    string result = item.InnerText.Trim();
+                    if (pattern.IsMatch(result))
+                    {
+                        this.FoundedURL = result;
                         return true;
                     }
-                    else
-                    {
-                        return false;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    throw ex;
                 }
             }
-        }
 
-        public bool HasDirector
-        {
-            get
-            {
-                return false;
-            }
+            return false;
         }
     }
 }

@@ -64,7 +64,7 @@ namespace iMovie
         public const string InvalidParamName = "Invalid Parameter Name.";
         public const string InvalidParamValue = "Invalid Parameter Value.";
 
-        public const string CouldNotGetPageSource = "Could not get page source.";
+        public const string CouldNotLoadWebPage = "Could not load web page.";
 
         public const string MovieAlreadyExisted = "This movie has been already existed.";
         public const string FolderHasBeenIgnored = "This folder has been ignored.";
@@ -99,12 +99,11 @@ namespace iMovie
         public const string AbortInsert = "Are you sure you want to exit and abort Insertion?\nYou will be able to continue insertion from where you leave now.";
         public const string LogCreated = "Log file created on desktop."; 
         public const string InvalidConnectionString = "Connection string to database is invalid.";
-        public const string MissedSQLSupport = "Your computer does not have any SQL Server Express 2008 or 2012 client.";
         public const string NotConnected = "It seems that this computer is not connected to the internet.";
         public const string SelectValues = "Please select some values to update.";
         public const string AreYouSureDeleteItem = "Are you sure you want to delete this item?";
         public const string ForceUpdateSure = "Force update will attempt to update the whole information available.\nEven those that already have valid values.\nAre you sure you want to force update this item?";
-        public const string IgnoreUpdate = "By unchecking this item, the whole movie information will be\nupdated through internet, even fields that already have valid values.\nThis cause the update progress to take more time.";
+        public const string IgnoreUpdate = "By unchecking this item, the whole movie information will be\nupdated through internet, even fields that already have valid values.\nThis cause the update process to take more time.";
         public const string ApplicationIsOpen = "There's another instance of iMovie running.\nDo you want to close that instance and run a new one?";
         public const string SomeUpdateRunning = "Some updates are in progress, please wait to complete operation.";
         public const string IPBanned = "The last @NUM@ movies failed to update in a row.\nIt seems that the internet resources has been banned your\ncurrent IP address from getting data. it's recommended to change\nyour IP address and continue again. if you want to stop update\nand change your IP address click Cancel.";
@@ -127,8 +126,11 @@ namespace iMovie
         public const string ForbiddenKeywords = "Your query contains some keywords that can modify data, it's not possible to modify data through SQL report console.";
         public const string AppendConfigs = "Do you want to append to existing configs?\nIf you select No, then existing configs will be overwritten.";
         public const string ConfigsGenerated = "Config files generated successfuly.";
+        public const string InvalidPageURL = "Page URL is invalid.";
+        public const string InvalidFileURL = "File URL is invalid.";
+        public const string InvalidSearchText = "Search text is invalid.";
 
-        // Mutex
+        // Mutex 
 
         public const string MutexName = "iMovieMutex";
 

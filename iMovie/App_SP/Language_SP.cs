@@ -79,5 +79,15 @@ namespace iMovie
                 throw ex;
             }
         }
+
+        public static DataTable GetByName(string name)
+        {
+            name = name.Trim();
+
+            DataTable dtLanguages = new DataTable();
+            dtLanguages = AccessDatabase.Select(QueryRepository.Language_Get_By_Name, "@LanguageName", name);
+
+            return dtLanguages;
+        }
     }
 }

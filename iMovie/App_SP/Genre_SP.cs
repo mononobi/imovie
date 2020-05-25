@@ -67,7 +67,7 @@ namespace iMovie
             }
         }
 
-        public static DataTable GetByName(string name = "")
+        public static DataTable GetByName(string name)
         {
             try
             {

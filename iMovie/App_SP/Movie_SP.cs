@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Text.RegularExpressions;
 using System.Data;
 using System.IO;
 using System.Windows.Forms;
@@ -10,6 +10,7 @@ namespace iMovie
 {
     public class Movie_SP
     {
+        private readonly static Regex MoviePagePattern = new Regex(@"^.+\.imdb\.com/title/.+$", RegexOptions.IgnoreCase | RegexOptions.Singleline);
         private readonly static string PersonPhotoPath = PathUtils.GetApplicationPersonPath();
         private readonly static string MoviePosterPath = PathUtils.GetApplicationMoviePosterPath();
         private static string[] realValues = { "%", "&", "[", "]", "=", "{", "}", "#", "@", "$", "^", @"""", ";", ",", "?", "/", @"\", ">", "<", "|", "+", "`" };
@@ -304,6 +305,15 @@ namespace iMovie
             }
         }
 
+        public static long DeleteAllMovieGenre(long movieID)
+        {
+            long count = 0;
+            count = AccessDatabase.Delete(QueryRepository.Movie_Genre_Delete_All,
+                                          "@MovieID", movieID);
+
+            return count;
+        }
+
         public static long DeleteMovieLanguage(long movieID, long languageID)
         {
             try
@@ -319,6 +329,15 @@ namespace iMovie
             {
                 throw ex;
             }
+        }
+
+        public static long DeleteAllMovieLanguage(long movieID)
+        {
+            long count = 0;
+            count = AccessDatabase.Delete(QueryRepository.Movie_Language_Delete_All,
+                                          "@MovieID", movieID);
+
+            return count;
         }
 
         public static long DeleteMovieDirector(long movieID, long personID)
@@ -338,12 +357,44 @@ namespace iMovie
             }
         }
 
+        public static long DeleteMovieActor(long movieID, long personID)
+        {
+            try
+            {
+                long count = 0;
+                count = AccessDatabase.Delete(QueryRepository.Movie_Actor_Delete,
+                                              "@MovieID", movieID,
+                                              "@PersonID", personID);
+
+                return count;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
         public static long DeleteAllMovieDirector(long movieID)
         {
             try
             {
                 long count = 0;
                 count = AccessDatabase.Delete(QueryRepository.Movie_Director_Delete_All,
+                                              "@MovieID", movieID);
+
+                return count;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+        public static long DeleteAllMovieActor(long movieID)
+        {
+            try
+            {
+                long count = 0;
+                count = AccessDatabase.Delete(QueryRepository.Movie_Actor_Delete_All,
                                               "@MovieID", movieID);
 
                 return count;
@@ -1335,1835 +1386,946 @@ namespace iMovie
             }
         }
 
-        public static enUpdateResult UpdateOnline(Movie movie, bool image, bool rate, bool link, 
-                                                  bool year, bool duration, bool story, bool genre,
-                                                  bool director, bool directorImage, bool language,
-                                                  bool ignoreValid, bool generateLog ,Form owner = null)
+        protected static bool IsIMDbTitlePage(string url)
         {
-            enUpdateResult result = enUpdateResult.NoNeedUpdate;
-            bool isOpen = false;
-
-            bool shouldUpdateRate = false;
-            bool shouldUpdateLink = false;
-            bool shouldUpdateYear = false;
-            bool shouldUpdateDuration = false;
-            bool shouldUpdateImage = false;
-            bool shouldUpdateStory = false;
-            bool shouldUpdateGenre = false;
-            bool shouldUpdateDirector = false;
-            bool shouldUpdateDirectorImage = false;
-            bool shouldUpdateLanguage = false;
-             
-            bool rateUpdated = false;
-            bool linkUpdated = false;
-            bool yearUpdated = false;
-            bool durationUpdated = false;
-            bool imageUpdated = false;
-            bool storyUpdated = false;
-            bool genreUpdated = false;
-            bool directorUpdated = false;
-            bool directorImageUpdated = false;
-            bool languageUpdated = false;
-
-            DataTable dtAllGenre = new DataTable();
-            DataTable dtMovieGenre = new DataTable();
-
-            DataTable dtAllLanguage = new DataTable();
-            DataTable dtMovieLanguage = new DataTable();
-             
-            DataTable dtAllDirector = new DataTable();
-            DataTable dtMovieDirector = new DataTable(); 
-             
             try
             {
-                string searchQuery1 = "";
-                string searchQuery2 = "";
+                return !string.IsNullOrEmpty(url) && 
+                    Movie_SP.MoviePagePattern.IsMatch(url) && DataOperation.IsAvailable(url);
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
+        }
 
-                if (movie.ProductYear == 0)
+        protected static string GetMovieIMDbPage(Movie movie, bool forceUpdate = false)
+        {
+            bool isPageAvailable = false;
+            if (!string.IsNullOrEmpty(movie.IMDBLink) && forceUpdate == false)
+            {
+                isPageAvailable = Movie_SP.IsIMDbTitlePage(movie.IMDBLink);
+            }
+
+            if (!isPageAvailable || forceUpdate == true)
+            {
+                string searchQuery = string.Empty;
+                if (movie.ProductYear <= 0)
                 {
-                    searchQuery1 = movie.MovieName + " imdb title";
+                    searchQuery = movie.MovieName + " imdb title";
                 }
                 else
                 {
-                    searchQuery1 = movie.FullTitle + " imdb title";
-                    searchQuery2 = movie.MovieName + " imdb title";
+                    searchQuery = movie.FullTitle + " imdb title";
                 }
 
-                int ind = 0 ;
-
-                foreach (string s in realValues)
+                int index = 0;
+                foreach (string item in realValues)
                 {
-                    searchQuery1 = searchQuery1.Replace(s, queryValues[ind]);
-                    searchQuery2 = searchQuery2.Replace(s, queryValues[ind]);
-                    ind++;
+                    searchQuery = searchQuery.Replace(item, queryValues[index]);
+                    index++;
                 }
 
-                Oscobo searchProvider = new Oscobo(false);
+                Oscobo searchProvider = new Oscobo();
+                return searchProvider.Search(searchQuery, Movie_SP.MoviePagePattern, 3);
+            }
+            else
+            {
+                return movie.IMDBLink;
+            }
+        }
 
-                if (rate == true)
+        public static enUpdateResult UpdateOnline(Movie movie, bool image, bool rate, bool link,
+                                                  bool year, bool duration, bool story, bool genre,
+                                                  bool director, bool directorImage, bool language,
+                                                  bool actor, bool actorImage, bool ignoreValid,
+                                                  bool generateLog, bool forceUpdateURL = false, 
+                                                  Form owner = null)
+        {
+            enUpdateResult result = enUpdateResult.NoNeedUpdate;
+            List<Person> updatedDirectorsImage = new List<Person>();
+            List<Person> updatedActorsImage = new List<Person>();
+
+            try
+            {
+                if (!image && !rate && !link && !year && !duration && !story && !genre &&
+                    !director && !directorImage && !language && !actor && !actorImage)
                 {
-                    if (movie.IMDBRate == 0 || ignoreValid == false)
+                    return enUpdateResult.NoNeedUpdate;
+                }
+
+                
+                string url = Movie_SP.GetMovieIMDbPage(movie, forceUpdateURL);
+                if (string.IsNullOrEmpty(url))
+                {
+                    if (generateLog == true)
                     {
-                        shouldUpdateRate = true;
-
-                        try
-                        {
-                            try
-                            {
-                                if (searchProvider.HasURL == false)
-                                {
-                                    searchProvider = new Oscobo(true, searchQuery1);
-                                    isOpen = true;
-                                }
-                                if (searchProvider.HasURL == true)
-                                {
-                                    searchProvider.IMDBMoviePage.Update();
-                                    isOpen = true;
-                                }
-                            }
-                            catch (Exception ex)
-                            {
-                                if (searchQuery2.Length == 0)
-                                {
-                                    throw ex;
-                                }
-                            }
-
-                            try
-                            {
-                                if (searchProvider.HasURL == false && searchQuery2.Length > 0)
-                                {
-                                    searchProvider = new Oscobo(true, searchQuery2);
-                                    isOpen = true;
-                                }
-                                if (searchProvider.HasURL == true)
-                                {
-                                    searchProvider.IMDBMoviePage.Update();
-                                    isOpen = true;
-                                }
-                            }
-                            catch (Exception ex)
-                            {
-
-                            }
-
-                            if (searchProvider.IMDBMoviePage.HasRate == true)
-                            {
-                                movie.IMDBRate = searchProvider.IMDBMoviePage.Rate;
-                                rateUpdated = true;
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            
-                        }
+                        iMovieBase.log.GenerateSilent("Could not get movie IMDb page link." + Environment.NewLine + movie.FullTitle);
                     }
+
+                    return enUpdateResult.UpdateError;
                 }
+
+                IMDb imdbPage = new IMDb(url);
+                IMDbCredits imdbCredits = new IMDbCredits(url.TrimEnd('/') + "/fullcredits");
 
                 if (link == true)
                 {
-                    if (movie.IMDBLink == "" || ignoreValid == false)
+                    if (string.IsNullOrEmpty(movie.IMDBLink) || ignoreValid == false ||
+                        forceUpdateURL == true || imdbPage.URL.ToLower() != movie.IMDBLink.ToLower())
                     {
-                        shouldUpdateLink = true;
+                        movie.IMDBLink = imdbPage.URL;
+                    }
+                }
 
+                if (rate == true)
+                {
+                    if (movie.IMDBRate <= 0 || ignoreValid == false)
+                    {
                         try
                         {
-                            try
+                            imdbPage.LoadRate();
+                            if (imdbPage.HasRate == true)
                             {
-                                if (searchProvider.HasURL == false)
-                                {
-                                    searchProvider = new Oscobo(true, searchQuery1);
-                                    isOpen = true;
-                                }
+                                movie.IMDBRate = imdbPage.Rate;
                             }
-                            catch (Exception ex)
+                            else
                             {
-                                if (searchQuery2.Length == 0)
-                                {
-                                    throw ex;
-                                }
+                                throw new Exception();
                             }
-
-                            try
-                            {
-                                if (searchProvider.HasURL == false && searchQuery2.Length > 0)
-                                {
-                                    searchProvider = new Oscobo(true, searchQuery2);
-                                    isOpen = true;
-                                }
-                            }
-                            catch (Exception ex)
-                            {
-
-                            }
-
-                            if (searchProvider.HasURL == true)
-                            {
-                                movie.IMDBLink = searchProvider.IMDBMoviePage.URL;
-                                linkUpdated = true;
-                            }
-
-                            if (shouldUpdateRate == true && rateUpdated == false)
-                            {
-                                if (searchProvider.IMDBMoviePage.HasRate == true)
-                                {
-                                    movie.IMDBRate = searchProvider.IMDBMoviePage.Rate;
-                                    rateUpdated = true;
-                                }
-                            }
+                        }
+                        catch (CouldNotLoadWebPageException ex)
+                        {
+                            throw ex;
                         }
                         catch (Exception ex)
                         {
-                           
+                            if (generateLog == true)
+                            {
+                                iMovieBase.log.GenerateSilent("Could not get movie IMDb rate." + Environment.NewLine + movie.FullTitle);
+                            }
                         }
                     }
                 }
 
                 if (year == true)
                 {
-                    if (movie.ProductYear == 0 || ignoreValid == false)
+                    if (movie.ProductYear <= 0 || ignoreValid == false)
                     {
-                        shouldUpdateYear = true;
-
                         try
                         {
-                            try
+                            imdbPage.LoadYear();
+                            if (imdbPage.HasYear == true)
                             {
-                                if (searchProvider.HasURL == false)
-                                {
-                                    searchProvider = new Oscobo(true, searchQuery1);
-                                    isOpen = true;
-                                }
-                                if (searchProvider.HasURL == true)
-                                {
-                                    searchProvider.IMDBMoviePage.Update();
-                                    isOpen = true;
-                                }
+                                movie.ProductYear = imdbPage.Year;
                             }
-                            catch (Exception ex)
+                            else
                             {
-                                if (searchQuery2.Length == 0)
-                                {
-                                    throw ex;
-                                }
+                                throw new Exception();
                             }
-
-                            try
-                            {
-                                if (searchProvider.HasURL == false && searchQuery2.Length > 0)
-                                {
-                                    searchProvider = new Oscobo(true, searchQuery2);
-                                    isOpen = true;
-                                }
-                                if (searchProvider.HasURL == true)
-                                {
-                                    searchProvider.IMDBMoviePage.Update();
-                                    isOpen = true;
-                                }
-                            }
-                            catch (Exception ex)
-                            {
-                                    
-                            }
-
-                            if (searchProvider.IMDBMoviePage.HasYear == true)
-                            {
-                                movie.ProductYear = searchProvider.IMDBMoviePage.Year;
-                                yearUpdated = true;
-                            }
-
-                            if (shouldUpdateRate == true && rateUpdated == false)
-                            {
-                                if (searchProvider.IMDBMoviePage.HasRate == true)
-                                {
-                                    movie.IMDBRate = searchProvider.IMDBMoviePage.Rate;
-                                    rateUpdated = true;
-                                }
-                            }
-
-                            if (shouldUpdateLink == true && linkUpdated == false)
-                            {
-                                if (searchProvider.HasURL == true)
-                                {
-                                    movie.IMDBLink = searchProvider.IMDBMoviePage.URL;
-                                    linkUpdated = true;
-                                }
-                            }
+                        }
+                        catch (CouldNotLoadWebPageException ex)
+                        {
+                            throw ex;
                         }
                         catch (Exception ex)
                         {
-                       
+                            if (generateLog == true)
+                            {
+                                iMovieBase.log.GenerateSilent("Could not get movie release year." + Environment.NewLine + movie.FullTitle);
+                            }
                         }
                     }
                 }
 
                 if (duration == true)
                 {
-                    if (movie.Duration.TotalSeconds == 0 || ignoreValid == false)
+                    if (movie.Duration.TotalSeconds <= 0 || ignoreValid == false)
                     {
-                        shouldUpdateDuration = true;
-
                         try
                         {
-                            try
+                            imdbPage.LoadMinutes();
+                            if (imdbPage.HasDuration == true)
                             {
-                                if (searchProvider.HasURL == false && searchProvider.IMDBMoviePage.HasDuration == false)
-                                {
-                                    if (movie.IMDBLink.Length > 0)
-                                    {
-                                        try
-                                        {
-                                            searchProvider.IMDBMoviePage.URL = movie.IMDBLink;
-                                            searchProvider.IMDBMoviePage.Update();
-                                            isOpen = true;
-                                        }
-                                        catch (Exception ex)
-                                        {
-                                        }
-                                    }
-                                    
-                                    if (searchProvider.IMDBMoviePage.HasDuration == false)
-                                    {
-                                        try
-                                        {
-                                            searchProvider = new Oscobo(true, searchQuery1);
-                                            isOpen = true;
-                                        }
-                                        catch (Exception ex)
-                                        {
-                                            if (searchQuery2.Length == 0)
-                                            {
-                                                throw ex;
-                                            }
-                                        }
-
-                                        try
-                                        {
-                                            if (searchProvider.HasURL == false &&
-                                                searchProvider.IMDBMoviePage.HasDuration == false &&
-                                                searchQuery2.Length > 0)
-                                            {
-                                                searchProvider = new Oscobo(true, searchQuery2);
-                                                isOpen = true;
-                                            }
-
-                                            if (searchProvider.HasURL == true &&
-                                                searchProvider.IMDBMoviePage.HasDuration == false)
-                                            {
-                                                searchProvider.IMDBMoviePage.Update();
-                                                isOpen = true;
-                                            }
-
-                                        }
-                                        catch (Exception ex)
-                                        {
-
-                                        }
-                                    }
-                                }
-
-                                if (searchProvider.HasURL == true && searchProvider.IMDBMoviePage.HasDuration == false)
-                                {
-                                    searchProvider.IMDBMoviePage.Update();
-                                    isOpen = true;
-                                }
+                                movie.Duration = imdbPage.Duration;
                             }
-                            catch (Exception ex)
+                            else
                             {
-                                
+                                throw new Exception();
                             }
-
-                            if (searchProvider.IMDBMoviePage.HasDuration == true)
-                            {
-                                movie.Duration = searchProvider.IMDBMoviePage.Duration;
-                                durationUpdated = true;
-                            }
-
-                            if (shouldUpdateRate == true && rateUpdated == false)
-                            {
-                                if (searchProvider.IMDBMoviePage.HasRate == true)
-                                {
-                                    movie.IMDBRate = searchProvider.IMDBMoviePage.Rate;
-                                    rateUpdated = true;
-                                }
-                            }
-
-                            if (shouldUpdateLink == true && linkUpdated == false)
-                            {
-                                if (searchProvider.HasURL == true)
-                                {
-                                    movie.IMDBLink = searchProvider.IMDBMoviePage.URL;
-                                    linkUpdated = true;
-                                }
-                            }
-
-                            if (shouldUpdateYear == true && yearUpdated == false)
-                            {
-                                if (searchProvider.IMDBMoviePage.HasYear == true)
-                                {
-                                    movie.ProductYear = searchProvider.IMDBMoviePage.Year;
-                                    yearUpdated = true;
-                                }
-                            }
+                        }
+                        catch (CouldNotLoadWebPageException ex)
+                        {
+                            throw ex;
                         }
                         catch (Exception ex)
                         {
-                       
+                            if (generateLog == true)
+                            {
+                                iMovieBase.log.GenerateSilent("Could not get movie duration." + Environment.NewLine + movie.FullTitle);
+                            }
                         }
                     }
                 }
 
                 if (story == true)
                 {
-                    if (movie.StoryLine.Length == 0 || ignoreValid == false)
+                    if (string.IsNullOrEmpty(movie.StoryLine) || ignoreValid == false)
                     {
-                        shouldUpdateStory = true;
-
                         try
                         {
-                            try
+                            imdbPage.LoadStoryLine();
+                            if (imdbPage.HasStoryLine == true)
                             {
-                                if (searchProvider.HasURL == false && searchProvider.IMDBMoviePage.HasStoryLine == false)
-                                {
-                                    if (movie.IMDBLink.Length > 0)
-                                    {
-                                        try
-                                        {
-                                            searchProvider.IMDBMoviePage.URL = movie.IMDBLink;
-                                            searchProvider.IMDBMoviePage.Update();
-                                            isOpen = true;
-                                        }
-                                        catch (Exception ex)
-                                        {
-                                        }
-                                    }
-
-                                    if (searchProvider.IMDBMoviePage.HasStoryLine == false)
-                                    {
-                                        try
-                                        {
-                                            searchProvider = new Oscobo(true, searchQuery1);
-                                            isOpen = true;
-                                        }
-                                        catch (Exception ex)
-                                        {
-                                            if (searchQuery2.Length == 0)
-                                            {
-                                                throw ex;
-                                            }
-                                        }
-
-                                        try
-                                        {
-                                            if (searchProvider.HasURL == false &&
-                                                searchProvider.IMDBMoviePage.HasStoryLine == false &&
-                                                searchQuery2.Length > 0)
-                                            {
-                                                searchProvider = new Oscobo(true, searchQuery2);
-                                                isOpen = true;
-                                            }
-
-                                            if (searchProvider.HasURL == true &&
-                                                searchProvider.IMDBMoviePage.HasStoryLine == false)
-                                            {
-                                                searchProvider.IMDBMoviePage.Update();
-                                                isOpen = true;
-                                            }
-
-                                        }
-                                        catch (Exception ex)
-                                        {
-
-                                        }
-                                    }
-                                }
-
-                                if (searchProvider.HasURL == true && searchProvider.IMDBMoviePage.HasStoryLine == false)
-                                {
-                                    searchProvider.IMDBMoviePage.Update();
-                                    isOpen = true;
-                                }
+                                movie.StoryLine = imdbPage.StoryLine;
                             }
-                            catch (Exception ex)
+                            else
                             {
-
+                                throw new Exception();
                             }
-
-                            if (searchProvider.IMDBMoviePage.HasStoryLine == true)
-                            {
-                                movie.StoryLine = searchProvider.IMDBMoviePage.StoryLine;
-                                storyUpdated = true;
-                            }
-
-                            if (shouldUpdateRate == true && rateUpdated == false)
-                            {
-                                if (searchProvider.IMDBMoviePage.HasRate == true)
-                                {
-                                    movie.IMDBRate = searchProvider.IMDBMoviePage.Rate;
-                                    rateUpdated = true;
-                                }
-                            }
-
-                            if (shouldUpdateLink == true && linkUpdated == false)
-                            {
-                                if (searchProvider.HasURL == true)
-                                {
-                                    movie.IMDBLink = searchProvider.IMDBMoviePage.URL;
-                                    linkUpdated = true;
-                                }
-                            }
-
-                            if (shouldUpdateYear == true && yearUpdated == false)
-                            {
-                                if (searchProvider.IMDBMoviePage.HasYear == true)
-                                {
-                                    movie.ProductYear = searchProvider.IMDBMoviePage.Year;
-                                    yearUpdated = true;
-                                }
-                            }
-
-                            if (shouldUpdateDuration == true && durationUpdated == false)
-                            {
-                                if (searchProvider.IMDBMoviePage.HasStoryLine == true)
-                                {
-                                    movie.StoryLine = searchProvider.IMDBMoviePage.StoryLine;
-                                    storyUpdated = true;
-                                }
-                            }
+                        }
+                        catch (CouldNotLoadWebPageException ex)
+                        {
+                            throw ex;
                         }
                         catch (Exception ex)
                         {
+                            if (generateLog == true)
+                            {
+                                iMovieBase.log.GenerateSilent("Could not get movie story line." + Environment.NewLine + movie.FullTitle);
+                            }
+                        }
+                    }
+                }
 
+                if (image == true)
+                {
+                    if (string.IsNullOrEmpty(movie.PosterLink) ||
+                        File.Exists(PathUtils.GetApplicationMoviePosterPath() + movie.PosterLink) == false ||
+                        ignoreValid == false)
+                    {
+                        string name = movie.FullTitle + ".jpg";
+                        string imageLink = Movie_SP.MoviePosterPath + name;
+
+                        if (Directory.Exists(Movie_SP.MoviePosterPath) == false)
+                        {
+                            Directory.CreateDirectory(Movie_SP.MoviePosterPath);
+                        }
+
+                        if (Directory.Exists(PathUtils.GetApplicationTempPath()) == false)
+                        {
+                            Directory.CreateDirectory(PathUtils.GetApplicationTempPath());
+                        }
+
+                        try
+                        {
+                            imdbPage.LoadPhotoLink();
+                            if (imdbPage.HasPhotoURL)
+                            {
+                                string realName = movie.FullTitle + Path.GetExtension(imdbPage.PhotoURL);
+                                string realImageLink = Movie_SP.MoviePosterPath + realName;
+                                string realTemp = PathUtils.GetApplicationTempPath() + realName;
+
+                                IMDb.DownloadFile(imdbPage.PhotoURL, realTemp);
+                                InsertManager im = new InsertManager(generateLog, false);
+                                realImageLink = im.RenameFile(realTemp, realImageLink);
+
+                                if (File.Exists(realImageLink) == true)
+                                {
+                                    movie.PosterLink = Path.GetFileName(realImageLink);
+                                }
+
+                                File.Delete(realTemp);
+                            }
+                            else
+                            {
+                                throw new Exception();
+                            }
+                        }
+                        catch (CouldNotLoadWebPageException ex)
+                        {
+                            throw ex;
+                        }
+                        catch (Exception ex)
+                        {
+                            if (generateLog == true)
+                            {
+                                iMovieBase.log.GenerateSilent("Could not get movie poster image." + Environment.NewLine + movie.FullTitle);
+                            }
                         }
                     }
                 }
 
                 if (genre == true)
                 {
-                    dtMovieGenre = Genre_SP.GetByMovieID(movie.MovieID);
+                    DataTable dtMovieGenre = Genre_SP.GetByMovieID(movie.MovieID);
 
                     if (dtMovieGenre.Rows.Count == 0 || ignoreValid == false)
                     {
-                        shouldUpdateGenre = true;
-
-                        if (dtAllGenre.Rows.Count == 0)
-                        {
-                            dtAllGenre = Genre_SP.GetList();
-                        }
-
                         try
                         {
-                            try
+                            imdbPage.LoadGenres();
+                            if (imdbPage.HasGenres == false)
                             {
-                                if (searchProvider.HasURL == false && searchProvider.IMDBMoviePage.HasGenre == false)
-                                {
-                                    if (movie.IMDBLink.Length > 0)
-                                    {
-                                        try
-                                        {
-                                            searchProvider.IMDBMoviePage.URL = movie.IMDBLink;
-                                            searchProvider.IMDBMoviePage.Update();
-                                            isOpen = true;
-                                        }
-                                        catch (Exception ex)
-                                        {
-                                        }
-                                    }
-
-                                    if (searchProvider.IMDBMoviePage.HasGenre == false)
-                                    {
-                                        try
-                                        {
-                                            searchProvider = new Oscobo(true, searchQuery1);
-                                            isOpen = true;
-                                        }
-                                        catch (Exception ex)
-                                        {
-                                            if (searchQuery2.Length == 0)
-                                            {
-                                                throw ex;
-                                            }
-                                        }
-
-                                        try
-                                        {
-                                            if (searchProvider.HasURL == false &&
-                                                searchProvider.IMDBMoviePage.HasGenre == false &&
-                                                searchQuery2.Length > 0)
-                                            {
-                                                searchProvider = new Oscobo(true, searchQuery2);
-                                                isOpen = true;
-                                            }
-
-                                            if (searchProvider.HasURL == true &&
-                                                searchProvider.IMDBMoviePage.HasGenre == false)
-                                            {
-                                                searchProvider.IMDBMoviePage.Update();
-                                                isOpen = true;
-                                            }
-
-                                        }
-                                        catch (Exception ex)
-                                        {
-
-                                        }
-                                    }
-                                }
-
-                                if (searchProvider.HasURL == true && searchProvider.IMDBMoviePage.HasGenre == false)
-                                {
-                                    searchProvider.IMDBMoviePage.Update();
-                                    isOpen = true;
-                                }
+                                throw new Exception();
                             }
-                            catch (Exception ex)
-                            {
-
-                            }
-
-                            if (searchProvider.IMDBMoviePage.HasGenre == true)
-                            {
-                                genreUpdated = true;
-                            }
-
-                            if (shouldUpdateRate == true && rateUpdated == false)
-                            {
-                                if (searchProvider.IMDBMoviePage.HasRate == true)
-                                {
-                                    movie.IMDBRate = searchProvider.IMDBMoviePage.Rate;
-                                    rateUpdated = true;
-                                }
-                            }
-
-                            if (shouldUpdateLink == true && linkUpdated == false)
-                            {
-                                if (searchProvider.HasURL == true)
-                                {
-                                    movie.IMDBLink = searchProvider.IMDBMoviePage.URL;
-                                    linkUpdated = true;
-                                }
-                            }
-
-                            if (shouldUpdateYear == true && yearUpdated == false)
-                            {
-                                if (searchProvider.IMDBMoviePage.HasYear == true)
-                                {
-                                    movie.ProductYear = searchProvider.IMDBMoviePage.Year;
-                                    yearUpdated = true;
-                                }
-                            }
-
-                            if (shouldUpdateDuration == true && durationUpdated == false)
-                            {
-                                if (searchProvider.IMDBMoviePage.HasStoryLine == true)
-                                {
-                                    movie.StoryLine = searchProvider.IMDBMoviePage.StoryLine;
-                                    storyUpdated = true;
-                                }
-                            }
-
-                            if (shouldUpdateStory == true && storyUpdated == false)
-                            {
-                                if (searchProvider.IMDBMoviePage.HasStoryLine == true)
-                                {
-                                    movie.StoryLine = searchProvider.IMDBMoviePage.StoryLine;
-                                    storyUpdated = true;
-                                }
-                            }
+                        }
+                        catch (CouldNotLoadWebPageException ex)
+                        {
+                            throw ex;
                         }
                         catch (Exception ex)
                         {
-
-                        }
-                    }
-                }
-
-                if (director == true)
-                {
-                    dtMovieDirector = Person_SP.GetDirectorByMovieID(movie.MovieID);
-
-                    if (dtMovieDirector.Rows.Count == 0 || ignoreValid == false)
-                    {
-                        shouldUpdateDirector = true;
-
-                        if (dtAllDirector.Rows.Count == 0)
-                        {
-                            dtAllDirector = Person_SP.GetList();
-                        }
-
-                        try
-                        {
-                            try
+                            if (generateLog == true)
                             {
-                                if (searchProvider.HasURL == false && searchProvider.IMDBMoviePage.HasDirector == false)
-                                {
-                                    if (movie.IMDBLink.Length > 0)
-                                    {
-                                        try
-                                        {
-                                            searchProvider.IMDBMoviePage.URL = movie.IMDBLink;
-                                            searchProvider.IMDBMoviePage.Update();
-                                            isOpen = true;
-                                        }
-                                        catch (Exception ex)
-                                        {
-                                        }
-                                    }
-
-                                    if (searchProvider.IMDBMoviePage.HasDirector == false)
-                                    {
-                                        try
-                                        {
-                                            searchProvider = new Oscobo(true, searchQuery1);
-                                            isOpen = true;
-                                        }
-                                        catch (Exception ex)
-                                        {
-                                            if (searchQuery2.Length == 0)
-                                            {
-                                                throw ex;
-                                            }
-                                        }
-
-                                        try
-                                        {
-                                            if (searchProvider.HasURL == false &&
-                                                searchProvider.IMDBMoviePage.HasDirector == false &&
-                                                searchQuery2.Length > 0)
-                                            {
-                                                searchProvider = new Oscobo(true, searchQuery2);
-                                                isOpen = true;
-                                            }
-
-                                            if (searchProvider.HasURL == true &&
-                                                searchProvider.IMDBMoviePage.HasDirector == false)
-                                            {
-                                                searchProvider.IMDBMoviePage.Update();
-                                                isOpen = true;
-                                            }
-
-                                        }
-                                        catch (Exception ex)
-                                        {
-
-                                        }
-                                    }
-                                }
-
-                                if (searchProvider.HasURL == true && searchProvider.IMDBMoviePage.HasDirector == false)
-                                {
-                                    searchProvider.IMDBMoviePage.Update();
-                                    isOpen = true;
-                                }
+                                iMovieBase.log.GenerateSilent("Could not get movie genres." + Environment.NewLine + movie.FullTitle);
                             }
-                            catch (Exception ex)
-                            {
-
-                            }
-
-                            if (searchProvider.IMDBMoviePage.HasDirector == true)
-                            {
-                                directorUpdated = true;
-                            }
-
-                            if (shouldUpdateRate == true && rateUpdated == false)
-                            {
-                                if (searchProvider.IMDBMoviePage.HasRate == true)
-                                {
-                                    movie.IMDBRate = searchProvider.IMDBMoviePage.Rate;
-                                    rateUpdated = true;
-                                }
-                            }
-
-                            if (shouldUpdateLink == true && linkUpdated == false)
-                            {
-                                if (searchProvider.HasURL == true)
-                                {
-                                    movie.IMDBLink = searchProvider.IMDBMoviePage.URL;
-                                    linkUpdated = true;
-                                }
-                            }
-
-                            if (shouldUpdateYear == true && yearUpdated == false)
-                            {
-                                if (searchProvider.IMDBMoviePage.HasYear == true)
-                                {
-                                    movie.ProductYear = searchProvider.IMDBMoviePage.Year;
-                                    yearUpdated = true;
-                                }
-                            }
-
-                            if (shouldUpdateDuration == true && durationUpdated == false)
-                            {
-                                if (searchProvider.IMDBMoviePage.HasStoryLine == true)
-                                {
-                                    movie.StoryLine = searchProvider.IMDBMoviePage.StoryLine;
-                                    storyUpdated = true;
-                                }
-                            }
-
-                            if (shouldUpdateStory == true && storyUpdated == false)
-                            {
-                                if (searchProvider.IMDBMoviePage.HasStoryLine == true)
-                                {
-                                    movie.StoryLine = searchProvider.IMDBMoviePage.StoryLine;
-                                    storyUpdated = true;
-                                }
-                            }
-
-                            if (shouldUpdateGenre == true && genreUpdated == false)
-                            {
-                                if (searchProvider.IMDBMoviePage.HasGenre == true)
-                                {
-                                    genreUpdated = true;
-                                }
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-
                         }
                     }
                 }
 
                 if (language == true)
                 {
-                    dtMovieLanguage = Language_SP.GetByMovieID(movie.MovieID);
+                    DataTable dtMovieLanguage = Language_SP.GetByMovieID(movie.MovieID);
 
                     if (dtMovieLanguage.Rows.Count == 0 || ignoreValid == false)
                     {
-                        shouldUpdateLanguage = true;
-
-                        if (dtAllLanguage.Rows.Count == 0)
-                        {
-                            dtAllLanguage = Language_SP.GetList();
-                        }
-
                         try
                         {
-                            try
+                            imdbPage.LoadLanguages();
+                            if (imdbPage.HasLanguages == false)
                             {
-                                if (searchProvider.HasURL == false && searchProvider.IMDBMoviePage.HasLanguage == false)
-                                {
-                                    if (movie.IMDBLink.Length > 0)
-                                    {
-                                        try
-                                        {
-                                            searchProvider.IMDBMoviePage.URL = movie.IMDBLink;
-                                            searchProvider.IMDBMoviePage.Update();
-                                            isOpen = true;
-                                        }
-                                        catch (Exception ex)
-                                        {
-                                        }
-                                    }
-
-                                    if (searchProvider.IMDBMoviePage.HasLanguage == false)
-                                    {
-                                        try
-                                        {
-                                            searchProvider = new Oscobo(true, searchQuery1);
-                                            isOpen = true;
-                                        }
-                                        catch (Exception ex)
-                                        {
-                                            if (searchQuery2.Length == 0)
-                                            {
-                                                throw ex;
-                                            }
-                                        }
-
-                                        try
-                                        {
-                                            if (searchProvider.HasURL == false &&
-                                                searchProvider.IMDBMoviePage.HasLanguage == false &&
-                                                searchQuery2.Length > 0)
-                                            {
-                                                searchProvider = new Oscobo(true, searchQuery2);
-                                                isOpen = true;
-                                            }
-
-                                            if (searchProvider.HasURL == true &&
-                                                searchProvider.IMDBMoviePage.HasLanguage == false)
-                                            {
-                                                searchProvider.IMDBMoviePage.Update();
-                                                isOpen = true;
-                                            }
-
-                                        }
-                                        catch (Exception ex)
-                                        {
-
-                                        }
-                                    }
-                                }
-
-                                if (searchProvider.HasURL == true && searchProvider.IMDBMoviePage.HasLanguage == false)
-                                {
-                                    searchProvider.IMDBMoviePage.Update();
-                                    isOpen = true;
-                                }
+                                throw new Exception();
                             }
-                            catch (Exception ex)
-                            {
-
-                            }
-
-                            if (searchProvider.IMDBMoviePage.HasLanguage == true)
-                            {
-                                languageUpdated = true;
-                            }
-
-                            if (shouldUpdateRate == true && rateUpdated == false)
-                            {
-                                if (searchProvider.IMDBMoviePage.HasRate == true)
-                                {
-                                    movie.IMDBRate = searchProvider.IMDBMoviePage.Rate;
-                                    rateUpdated = true;
-                                }
-                            }
-
-                            if (shouldUpdateLink == true && linkUpdated == false)
-                            {
-                                if (searchProvider.HasURL == true)
-                                {
-                                    movie.IMDBLink = searchProvider.IMDBMoviePage.URL;
-                                    linkUpdated = true;
-                                }
-                            }
-
-                            if (shouldUpdateYear == true && yearUpdated == false)
-                            {
-                                if (searchProvider.IMDBMoviePage.HasYear == true)
-                                {
-                                    movie.ProductYear = searchProvider.IMDBMoviePage.Year;
-                                    yearUpdated = true;
-                                }
-                            }
-
-                            if (shouldUpdateDuration == true && durationUpdated == false)
-                            {
-                                if (searchProvider.IMDBMoviePage.HasStoryLine == true)
-                                {
-                                    movie.StoryLine = searchProvider.IMDBMoviePage.StoryLine;
-                                    storyUpdated = true;
-                                }
-                            }
-
-                            if (shouldUpdateStory == true && storyUpdated == false)
-                            {
-                                if (searchProvider.IMDBMoviePage.HasStoryLine == true)
-                                {
-                                    movie.StoryLine = searchProvider.IMDBMoviePage.StoryLine;
-                                    storyUpdated = true;
-                                }
-                            }
-
-                            if (shouldUpdateGenre == true && genreUpdated == false)
-                            {
-                                if (searchProvider.IMDBMoviePage.HasGenre == true)
-                                {
-                                    genreUpdated = true;
-                                }
-                            }
-
-                            if (shouldUpdateDirector == true && directorUpdated == false)
-                            {
-                                if (searchProvider.IMDBMoviePage.HasDirector == true)
-                                {
-                                    directorUpdated = true;
-                                }
-                            }
+                        }
+                        catch (CouldNotLoadWebPageException ex)
+                        {
+                            throw ex;
                         }
                         catch (Exception ex)
                         {
+                            if (generateLog == true)
+                            {
+                                iMovieBase.log.GenerateSilent("Could not get movie languages." + Environment.NewLine + movie.FullTitle);
+                            }
+                        }
+                    }
+                }
 
+                if (director == true)
+                {
+                    DataTable dtMovieDirector = Person_SP.GetDirectorByMovieID(movie.MovieID);
+
+                    if (dtMovieDirector.Rows.Count == 0 || ignoreValid == false)
+                    {
+                        try
+                        {
+                            imdbCredits.LoadDirectors();
+                            if (imdbCredits.HasDirectors == false)
+                            {
+                                throw new Exception();
+                            }
+                        }
+                        catch (CouldNotLoadWebPageException ex)
+                        {
+                            throw ex;
+                        }
+                        catch (Exception ex)
+                        {
+                            if (generateLog == true)
+                            {
+                                iMovieBase.log.GenerateSilent("Could not get movie directors." + Environment.NewLine + movie.FullTitle);
+                            }
+                        }
+                    }
+                }
+
+                if (actor == true)
+                {
+                    DataTable dtMovieActor = Person_SP.GetActorByMovieID(movie.MovieID);
+
+                    if (dtMovieActor.Rows.Count == 0 || ignoreValid == false)
+                    {
+                        try
+                        {
+                            imdbCredits.LoadActors();
+                            if (imdbCredits.HasActors == false)
+                            {
+                                throw new Exception();
+                            }
+                        }
+                        catch (CouldNotLoadWebPageException ex)
+                        {
+                            throw ex;
+                        }
+                        catch (Exception ex)
+                        {
+                            if (generateLog == true)
+                            {
+                                iMovieBase.log.GenerateSilent("Could not get movie actors." + Environment.NewLine + movie.FullTitle);
+                            }
                         }
                     }
                 }
 
                 if (directorImage == true)
                 {
-                    dtMovieDirector = Person_SP.GetDirectorByMovieID(movie.MovieID);
-                    
-                    try
+                    bool shouldUpdateDirectorImage = false;
+                    DataTable dtMovieDirector = Person_SP.GetDirectorByMovieID(movie.MovieID);
+
+                    if (imdbCredits.HasDirectors == true)
                     {
-                        try
+                        shouldUpdateDirectorImage = true;
+                    }
+                    else
+                    {
+                        foreach (DataRow dr in dtMovieDirector.Rows)
                         {
-                            if (directorUpdated == true)
+                            string imagePath = string.Format("{0}{1}", Movie_SP.PersonPhotoPath, 
+                                dr["PhotoLink"]?.ToString() ?? string.Empty);
+
+                            if (string.IsNullOrEmpty(dr["PhotoLink"]?.ToString()) || 
+                                File.Exists(imagePath) == false || ignoreValid == false)
                             {
                                 shouldUpdateDirectorImage = true;
-                            }
-                            else
-                            {
-                                foreach (DataRow dr in dtMovieDirector.Rows)
-                                {
-                                    if (File.Exists(dr["PhotoLink"].ToString()) == false)
-                                    {
-                                        shouldUpdateDirectorImage = true;
-                                        break;
-                                    }
-                                }
-                            }
-
-                            if (shouldUpdateDirectorImage == true && searchProvider.HasURL == false && searchProvider.IMDBMoviePage.HasDirector == false)
-                            {
-                                if (movie.IMDBLink.Length > 0)
-                                {
-                                    try
-                                    {
-                                        searchProvider.IMDBMoviePage.URL = movie.IMDBLink;
-                                        searchProvider.IMDBMoviePage.Update();
-                                        isOpen = true;
-                                    }
-                                    catch (Exception ex)
-                                    {
-                                    }
-                                }
-
-                                if (searchProvider.IMDBMoviePage.HasDirector == false)
-                                {
-                                    try
-                                    {
-                                        searchProvider = new Oscobo(true, searchQuery1);
-                                        isOpen = true;
-                                    }
-                                    catch (Exception ex)
-                                    {
-                                        if (searchQuery2.Length == 0)
-                                        {
-                                            throw ex;
-                                        }
-                                    }
-
-                                    try
-                                    {
-                                        if (searchProvider.HasURL == false &&
-                                            searchProvider.IMDBMoviePage.HasDirector == false &&
-                                            searchQuery2.Length > 0)
-                                        {
-                                            searchProvider = new Oscobo(true, searchQuery2);
-                                            isOpen = true;
-                                        }
-
-                                        if (searchProvider.HasURL == true &&
-                                            searchProvider.IMDBMoviePage.HasDirector == false)
-                                        {
-                                            searchProvider.IMDBMoviePage.Update();
-                                            isOpen = true;
-                                        }
-
-                                    }
-                                    catch (Exception ex)
-                                    {
-
-                                    }
-                                }
-
-                                if (searchProvider.HasURL == true && searchProvider.IMDBMoviePage.HasDirector == false)
-                                {
-                                    searchProvider.IMDBMoviePage.Update();
-                                    isOpen = true;
-                                }
+                                break;
                             }
                         }
-                        catch (Exception ex)
-                        {
+                    }
 
+                    if (shouldUpdateDirectorImage == true)
+                    {
+                        if (Directory.Exists(PathUtils.GetApplicationPersonPath()) == false)
+                        {
+                            Directory.CreateDirectory(PathUtils.GetApplicationPersonPath());
                         }
 
-                        if (shouldUpdateDirectorImage == true && searchProvider.IMDBMoviePage.HasDirector == true)
+                        if (Directory.Exists(PathUtils.GetApplicationTempPath()) == false)
                         {
-                            if (Directory.Exists(PathUtils.GetApplicationPersonPath()) == false)
-                            {
-                                Directory.CreateDirectory(PathUtils.GetApplicationPersonPath());
-                            }
+                            Directory.CreateDirectory(PathUtils.GetApplicationTempPath());
+                        }
 
-                            if (Directory.Exists(PathUtils.GetApplicationTempPath()) == false)
+                        if (imdbCredits.HasDirectors == false)
+                        {
+                            foreach (DataRow dr in dtMovieDirector.Rows)
                             {
-                                Directory.CreateDirectory(PathUtils.GetApplicationTempPath());
-                            }
-
-                            if (directorUpdated == false)
-                            {
-                                foreach (DataRow dr in dtMovieDirector.Rows)
+                                try
                                 {
-                                    if (File.Exists(dr["PhotoLink"].ToString()) == false)
+                                    string imagePath = string.Format("{0}{1}", Movie_SP.PersonPhotoPath,
+                                        dr["PhotoLink"]?.ToString() ?? string.Empty);
+
+                                    if (string.IsNullOrEmpty(dr["PhotoLink"]?.ToString()) || 
+                                        File.Exists(imagePath) == false || ignoreValid == false)
                                     {
-                                        foreach (Person p in searchProvider.IMDBMoviePage.Directors)
+                                        if (!string.IsNullOrEmpty(dr["IMDBLink"]?.ToString()) &&
+                                            (File.Exists(Movie_SP.PersonPhotoPath + dr["FullName"].ToString() + ".jpg") == false || 
+                                            ignoreValid == false))
                                         {
-                                            if (dr["FullName"].ToString() == p.FullName && p.PhotoLink.Length > 0)
+                                            IMDbPerson directorPage = new IMDbPerson(dr["IMDBLink"].ToString());
+                                            directorPage.LoadPhotoLink();
+                                            if (directorPage.HasPhotoLink)
                                             {
-                                                if (File.Exists(PersonPhotoPath + dr["FullName"].ToString() + ".jpg") == false)
+                                                string realName = dr["FullName"].ToString() + Path.GetExtension(directorPage.PhotoLink);
+                                                string realImageLink = Movie_SP.PersonPhotoPath + realName;
+                                                string realTemp = PathUtils.GetApplicationTempPath() + realName;
+
+                                                IMDb.DownloadFile(directorPage.PhotoLink, realTemp);
+                                                InsertManager im = new InsertManager(generateLog, false);
+                                                realImageLink = im.RenameFile(realTemp, realImageLink);
+
+                                                if (File.Exists(realImageLink) == true)
                                                 {
-                                                    string realName = p.FullName + Path.GetExtension(p.PhotoLink);
-                                                    string realImageLink = PersonPhotoPath + realName;
-                                                    string realTemp = PathUtils.GetApplicationTempPath() + realName;
-
-                                                    IMDb.DownloadImage(p.PhotoLink, realTemp);
-                                                    isOpen = true;
-
-                                                    InsertManager im = new InsertManager(generateLog, false);
-                                                    realImageLink = im.RenameFile(realTemp, realImageLink);
-
-                                                    if (File.Exists(realImageLink) == true)
-                                                    {
-                                                        p.PhotoLink = Path.GetFileName(realImageLink);
-                                                        p.PersonID = Convert.ToInt64(dr["PersonID"].ToString());
-                                                        directorImageUpdated = true;
-                                                    }
-
-                                                    File.Delete(realTemp);
-                                                    break;
-                                                }
-                                                else
-                                                {
-                                                    p.PhotoLink = dr["FullName"].ToString() + ".jpg";
+                                                    Person p = new Person();
+                                                    p.PhotoLink = Path.GetFileName(realImageLink);
                                                     p.PersonID = Convert.ToInt64(dr["PersonID"].ToString());
-                                                    directorImageUpdated = true;
-                                                    break;
+                                                    updatedDirectorsImage.Add(p);
                                                 }
+
+                                                File.Delete(realTemp);
+                                            }
+                                            else
+                                            {
+                                                throw new Exception();
                                             }
                                         }
+                                        else if (File.Exists(Movie_SP.PersonPhotoPath + dr["FullName"].ToString() + ".jpg") == true)
+                                        {
+                                            Person p = new Person();
+                                            p.PhotoLink = dr["FullName"].ToString() + ".jpg";
+                                            p.PersonID = Convert.ToInt64(dr["PersonID"].ToString());
+                                            updatedDirectorsImage.Add(p);
+                                        }
                                     }
                                 }
-                            }
-                            else
-                            {
-                                foreach (Person p in searchProvider.IMDBMoviePage.Directors)
+                                catch(Exception ex)
                                 {
-                                    if (File.Exists(PersonPhotoPath + p.FullName + ".jpg") == false)
+                                    if (generateLog == true)
                                     {
-                                        string realName = p.FullName + Path.GetExtension(p.PhotoLink);
-                                        string realImageLink = PersonPhotoPath + realName;
-                                        string realTemp = PathUtils.GetApplicationTempPath() + realName;
-
-                                        IMDb.DownloadImage(p.PhotoLink, realTemp);
-                                        isOpen = true;
-
-                                        InsertManager im = new InsertManager(generateLog, false);
-                                        realImageLink = im.RenameFile(realTemp, realImageLink);
-
-                                        if (File.Exists(realImageLink) == true)
-                                        {
-                                            p.PhotoLink = Path.GetFileName(realImageLink);
-                                            p.PersonID = 99999999;
-                                            directorImageUpdated = true;
-                                        }
-
-                                        File.Delete(realTemp);
+                                        iMovieBase.log.GenerateSilent("Could not get director photo." + 
+                                            Environment.NewLine + dr["FullName"].ToString() + 
+                                            Environment.NewLine + movie.FullTitle);
                                     }
-                                    else
+
+                                    continue;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            foreach (Person p in imdbCredits.Directors)
+                            {
+                                try
+                                {
+                                    if (!string.IsNullOrEmpty(p.IMDBLink) &&
+                                        (File.Exists(Movie_SP.PersonPhotoPath + p.FullName + ".jpg") == false || 
+                                        ignoreValid == false))
+                                    {
+                                        IMDbPerson directorPage = new IMDbPerson(p.IMDBLink);
+                                        directorPage.LoadPhotoLink();
+
+                                        if (directorPage.HasPhotoLink)
+                                        {
+                                            string realName = p.FullName + Path.GetExtension(directorPage.PhotoLink);
+                                            string realImageLink = PersonPhotoPath + realName;
+                                            string realTemp = PathUtils.GetApplicationTempPath() + realName;
+
+                                            IMDb.DownloadFile(directorPage.PhotoLink, realTemp);
+                                            InsertManager im = new InsertManager(generateLog, false);
+                                            realImageLink = im.RenameFile(realTemp, realImageLink);
+
+                                            if (File.Exists(realImageLink) == true)
+                                            {
+                                                p.PhotoLink = Path.GetFileName(realImageLink);
+                                                p.PersonID = 99999999;
+                                            }
+
+                                            File.Delete(realTemp);
+                                        }
+                                        else
+                                        {
+                                            throw new Exception();
+                                        }
+                                    }
+                                    else if (File.Exists(Movie_SP.PersonPhotoPath + p.FullName + ".jpg") == true)
                                     {
                                         p.PhotoLink = p.FullName + ".jpg";
                                         p.PersonID = 99999999;
-                                        directorImageUpdated = true;
                                     }
+                                }
+                                catch (Exception ex)
+                                {
+                                    if (generateLog == true)
+                                    {
+                                        iMovieBase.log.GenerateSilent("Could not get director photo." + 
+                                            Environment.NewLine + p.FullName +
+                                            Environment.NewLine + movie.FullTitle);
+                                    }
+
+                                    continue;
                                 }
                             }
                         }
-
-                        if (shouldUpdateRate == true && rateUpdated == false)
-                        {
-                            if (searchProvider.IMDBMoviePage.HasRate == true)
-                            {
-                                movie.IMDBRate = searchProvider.IMDBMoviePage.Rate;
-                                rateUpdated = true;
-                            }
-                        }
-
-                        if (shouldUpdateLink == true && linkUpdated == false)
-                        {
-                            if (searchProvider.HasURL == true)
-                            {
-                                movie.IMDBLink = searchProvider.IMDBMoviePage.URL;
-                                linkUpdated = true;
-                            }
-                        }
-
-                        if (shouldUpdateYear == true && yearUpdated == false)
-                        {
-                            if (searchProvider.IMDBMoviePage.HasYear == true)
-                            {
-                                movie.ProductYear = searchProvider.IMDBMoviePage.Year;
-                                yearUpdated = true;
-                            }
-                        }
-
-                        if (shouldUpdateDuration == true && durationUpdated == false)
-                        {
-                            if (searchProvider.IMDBMoviePage.HasStoryLine == true)
-                            {
-                                movie.StoryLine = searchProvider.IMDBMoviePage.StoryLine;
-                                storyUpdated = true;
-                            }
-                        }
-
-                        if (shouldUpdateStory == true && storyUpdated == false)
-                        {
-                            if (searchProvider.IMDBMoviePage.HasStoryLine == true)
-                            {
-                                movie.StoryLine = searchProvider.IMDBMoviePage.StoryLine;
-                                storyUpdated = true;
-                            }
-                        }
-
-                        if (shouldUpdateGenre == true && genreUpdated == false)
-                        {
-                            if (searchProvider.IMDBMoviePage.HasGenre == true)
-                            {
-                                genreUpdated = true;
-                            }
-                        }
-
-                        if (shouldUpdateDirector == true && directorUpdated == false)
-                        {
-                            if (searchProvider.IMDBMoviePage.HasDirector == true)
-                            {
-                                directorUpdated = true;
-                            }
-                        }
-
-                        if (shouldUpdateLanguage == true && languageUpdated == false)
-                        {
-                            if (searchProvider.IMDBMoviePage.HasLanguage == true)
-                            {
-                                languageUpdated = true;
-                            }
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-
                     }
                 }
 
-                if (image == true)
+                if (actorImage == true)
                 {
-                    if (File.Exists(PathUtils.GetApplicationMoviePosterPath() + movie.PosterLink) == false || ignoreValid == false)
+                    bool shouldUpdateActorImage = false;
+                    DataTable dtMovieActor = Person_SP.GetActorByMovieID(movie.MovieID);
+
+                    if (imdbCredits.HasActors == true)
                     {
-                        string photoURL = "";
-                        shouldUpdateImage = true;
-
-                        try
+                        shouldUpdateActorImage = true;
+                    }
+                    else
+                    {
+                        foreach (DataRow dr in dtMovieActor.Rows)
                         {
-                            string name = movie.FullTitle + ".jpg";
-                            string imageLink = MoviePosterPath + name;
+                            string imagePath = string.Format("{0}{1}", Movie_SP.PersonPhotoPath,
+                                dr["PhotoLink"]?.ToString() ?? string.Empty);
 
-                            if (Directory.Exists(MoviePosterPath) == false)
+                            if (string.IsNullOrEmpty(dr["PhotoLink"]?.ToString()) ||
+                                File.Exists(imagePath) == false || ignoreValid == false)
                             {
-                                Directory.CreateDirectory(MoviePosterPath);
+                                shouldUpdateActorImage = true;
+                                break;
                             }
+                        }
+                    }
 
-                            try
+                    if (shouldUpdateActorImage == true)
+                    {
+                        if (Directory.Exists(PathUtils.GetApplicationPersonPath()) == false)
+                        {
+                            Directory.CreateDirectory(PathUtils.GetApplicationPersonPath());
+                        }
+
+                        if (Directory.Exists(PathUtils.GetApplicationTempPath()) == false)
+                        {
+                            Directory.CreateDirectory(PathUtils.GetApplicationTempPath());
+                        }
+
+                        if (imdbCredits.HasActors == false)
+                        {
+                            foreach (DataRow dr in dtMovieActor.Rows)
                             {
-                                if (File.Exists(imageLink) == true)
+                                try
                                 {
-                                    photoURL = imageLink;
-                                    isOpen = true;
-                                }
-                                else
-                                {
-                                    try
+                                    string imagePath = string.Format("{0}{1}", Movie_SP.PersonPhotoPath,
+                                        dr["PhotoLink"]?.ToString() ?? string.Empty);
+
+                                    if (string.IsNullOrEmpty(dr["PhotoLink"]?.ToString()) ||
+                                        File.Exists(imagePath) == false || ignoreValid == false)
                                     {
-                                        if (searchProvider.HasURL == false && searchProvider.IMDBMoviePage.HasPhotoURL == false)
+                                        if (!string.IsNullOrEmpty(dr["IMDBLink"]?.ToString()) &&
+                                            (File.Exists(Movie_SP.PersonPhotoPath + dr["FullName"].ToString() + ".jpg") == false ||
+                                            ignoreValid == false))
                                         {
-                                            if (movie.IMDBLink.Length > 0)
+                                            IMDbPerson actorPage = new IMDbPerson(dr["IMDBLink"].ToString());
+                                            actorPage.LoadPhotoLink();
+                                            if (actorPage.HasPhotoLink)
                                             {
-                                                try
+                                                string realName = dr["FullName"].ToString() + Path.GetExtension(actorPage.PhotoLink);
+                                                string realImageLink = Movie_SP.PersonPhotoPath + realName;
+                                                string realTemp = PathUtils.GetApplicationTempPath() + realName;
+
+                                                IMDb.DownloadFile(actorPage.PhotoLink, realTemp);
+                                                InsertManager im = new InsertManager(generateLog, false);
+                                                realImageLink = im.RenameFile(realTemp, realImageLink);
+
+                                                if (File.Exists(realImageLink) == true)
                                                 {
-                                                    searchProvider.IMDBMoviePage.URL = movie.IMDBLink;
-                                                    searchProvider.IMDBMoviePage.Update();
-                                                    isOpen = true;
+                                                    Person p = new Person();
+                                                    p.PhotoLink = Path.GetFileName(realImageLink);
+                                                    p.PersonID = Convert.ToInt64(dr["PersonID"].ToString());
+                                                    updatedActorsImage.Add(p);
                                                 }
-                                                catch (Exception ex)
-                                                {
-                                                }
+
+                                                File.Delete(realTemp);
                                             }
-
-                                            if (searchProvider.IMDBMoviePage.HasPhotoURL == false)
+                                            else
                                             {
-                                                try
-                                                {
-                                                    searchProvider = new Oscobo(true, searchQuery1);
-                                                    isOpen = true;
-                                                }
-                                                catch (Exception ex)
-                                                {
-                                                    if (searchQuery2.Length == 0)
-                                                    {
-                                                        throw ex;
-                                                    }
-                                                }
-
-                                                try
-                                                {
-                                                    if (searchProvider.HasURL == false &&
-                                                        searchProvider.IMDBMoviePage.HasPhotoURL == false &&
-                                                        searchQuery2.Length > 0)
-                                                    {
-                                                        searchProvider = new Oscobo(true, searchQuery2);
-                                                        isOpen = true;
-                                                    }
-
-                                                    if (searchProvider.HasURL == true &&
-                                                        searchProvider.IMDBMoviePage.HasPhotoURL == false)
-                                                    {
-                                                        searchProvider.IMDBMoviePage.Update();
-                                                        isOpen = true;
-                                                    }
-
-                                                }
-                                                catch (Exception ex)
-                                                {
-
-                                                }
+                                                throw new Exception();
                                             }
                                         }
-
-                                        if (searchProvider.HasURL == true && searchProvider.IMDBMoviePage.HasPhotoURL == false)
+                                        else if (File.Exists(Movie_SP.PersonPhotoPath + dr["FullName"].ToString() + ".jpg") == true)
                                         {
-                                            searchProvider.IMDBMoviePage.Update();
-                                            isOpen = true;
+                                            Person p = new Person();
+                                            p.PhotoLink = dr["FullName"].ToString() + ".jpg";
+                                            p.PersonID = Convert.ToInt64(dr["PersonID"].ToString());
+                                            updatedActorsImage.Add(p);
                                         }
                                     }
-                                    catch (Exception ex)
-                                    {
-
-                                    }
                                 }
-
-                                if (shouldUpdateRate == true && rateUpdated == false)
+                                catch (Exception ex)
                                 {
-                                    if (searchProvider.IMDBMoviePage.HasRate == true)
+                                    if (generateLog == true)
                                     {
-                                        movie.IMDBRate = searchProvider.IMDBMoviePage.Rate;
-                                        rateUpdated = true;
-                                    }
-                                }
-
-                                if (shouldUpdateLink == true && linkUpdated == false)
-                                {
-                                    if (searchProvider.HasURL == true)
-                                    {
-                                        movie.IMDBLink = searchProvider.IMDBMoviePage.URL;
-                                        linkUpdated = true;
-                                    }
-                                }
-
-                                if (shouldUpdateYear == true && yearUpdated == false)
-                                {
-                                    if (searchProvider.IMDBMoviePage.HasYear == true)
-                                    {
-                                        movie.ProductYear = searchProvider.IMDBMoviePage.Year;
-                                        yearUpdated = true;
-                                    }
-                                }
-
-                                if (shouldUpdateDuration == true && durationUpdated == false)
-                                {
-                                    if (searchProvider.IMDBMoviePage.HasDuration == true)
-                                    {
-                                        movie.Duration = searchProvider.IMDBMoviePage.Duration;
-                                        durationUpdated = true;
-                                    }
-                                }
-
-                                if (shouldUpdateStory == true && storyUpdated == false)
-                                {
-                                    if (searchProvider.IMDBMoviePage.HasStoryLine == true)
-                                    {
-                                        movie.StoryLine = searchProvider.IMDBMoviePage.StoryLine;
-                                        storyUpdated = true;
-                                    }
-                                }
-
-                                if (shouldUpdateGenre == true && genreUpdated == false)
-                                {
-                                    if (searchProvider.IMDBMoviePage.HasGenre == true)
-                                    {
-                                        genreUpdated = true;
-                                    }
-                                }
-
-                                if (shouldUpdateDirector == true && directorUpdated == false)
-                                {
-                                    if (searchProvider.IMDBMoviePage.HasDirector == true)
-                                    {
-                                        directorUpdated = true;
-                                    }
-                                }
-
-                                if (shouldUpdateLanguage == true && languageUpdated == false)
-                                {
-                                    if (searchProvider.IMDBMoviePage.HasLanguage == true)
-                                    {
-                                        languageUpdated = true;
-                                    }
-                                }
-                            }
-                            catch (Exception ex)
-                            {
-                        
-                            }
-
-                            if (File.Exists(photoURL) == true)
-                            {
-                                movie.PosterLink = Path.GetFileName(photoURL);
-                                imageUpdated = true;
-                                isOpen = true;
-                            }
-                            else
-                            {
-                                if (searchProvider.IMDBMoviePage.HasPhotoURL == true)
-                                {
-                                    string realName = movie.FullTitle + Path.GetExtension(searchProvider.IMDBMoviePage.PhotoURL);
-                                    string realImageLink = MoviePosterPath + realName;
-                                    string realTemp = PathUtils.GetApplicationTempPath() + realName;
-
-                                    if (Directory.Exists(MoviePosterPath) == false)
-                                    {
-                                        Directory.CreateDirectory(MoviePosterPath);
+                                        iMovieBase.log.GenerateSilent("Could not get actor photo." + 
+                                            Environment.NewLine + dr["FullName"].ToString() +
+                                            Environment.NewLine + movie.FullTitle);
                                     }
 
-                                    if (Directory.Exists(PathUtils.GetApplicationTempPath()) == false)
-                                    {
-                                        Directory.CreateDirectory(PathUtils.GetApplicationTempPath());
-                                    }
-
-                                    IMDb.DownloadImage(searchProvider.IMDBMoviePage.PhotoURL, realTemp);
-                                    isOpen = true;
-
-                                    InsertManager im = new InsertManager(generateLog, false);
-                                    realImageLink = im.RenameFile(realTemp, realImageLink);
-
-                                    if (File.Exists(realImageLink) == true)
-                                    {
-                                        movie.PosterLink = Path.GetFileName(realImageLink);
-                                        imageUpdated = true;
-                                    }
-
-                                    File.Delete(realTemp);
+                                    continue;
                                 }
                             }
                         }
-                        catch (Exception ex)
+                        else
                         {
-                          
+                            foreach (Person p in imdbCredits.Actors)
+                            {
+                                try
+                                {
+                                    if (!string.IsNullOrEmpty(p.IMDBLink) &&
+                                        (File.Exists(Movie_SP.PersonPhotoPath + p.FullName + ".jpg") == false ||
+                                        ignoreValid == false))
+                                    {
+                                        IMDbPerson actorPage = new IMDbPerson(p.IMDBLink);
+                                        actorPage.LoadPhotoLink();
+                                        if (actorPage.HasPhotoLink)
+                                        {
+                                            string realName = p.FullName + Path.GetExtension(actorPage.PhotoLink);
+                                            string realImageLink = PersonPhotoPath + realName;
+                                            string realTemp = PathUtils.GetApplicationTempPath() + realName;
+
+                                            IMDb.DownloadFile(actorPage.PhotoLink, realTemp);
+                                            InsertManager im = new InsertManager(generateLog, false);
+                                            realImageLink = im.RenameFile(realTemp, realImageLink);
+
+                                            if (File.Exists(realImageLink) == true)
+                                            {
+                                                p.PhotoLink = Path.GetFileName(realImageLink);
+                                                p.PersonID = 99999999;
+                                            }
+
+                                            File.Delete(realTemp);
+                                        }
+                                        else
+                                        {
+                                            throw new Exception();
+                                        }
+                                    }
+                                    else if (File.Exists(Movie_SP.PersonPhotoPath + p.FullName + ".jpg") == true)
+                                    {
+                                        p.PhotoLink = p.FullName + ".jpg";
+                                        p.PersonID = 99999999;
+                                    }
+                                }
+                                catch (Exception ex)
+                                {
+                                    if (generateLog == true)
+                                    {
+                                        iMovieBase.log.GenerateSilent("Could not get actor photo." + 
+                                            Environment.NewLine + p.FullName +
+                                            Environment.NewLine + movie.FullTitle);
+                                    }
+
+                                    continue;
+                                }
+                            }
                         }
                     }
                 }
 
-                if (shouldUpdateDuration == true && durationUpdated == false)
+                try
                 {
-                    if (generateLog == true)
-                    {
-                        iMovieBase.log.GenerateSilent("Could not get movie duration." + Environment.NewLine + movie.FullTitle);
-                    }
-                }
-
-                if (shouldUpdateImage == true && imageUpdated == false)
-                {
-                    if (generateLog == true)
-                    {
-                        iMovieBase.log.GenerateSilent("Could not get movie poster image." + Environment.NewLine + movie.FullTitle);
-                    }
-                }
-
-                if (shouldUpdateLink == true && linkUpdated == false)
-                {
-                    if (generateLog == true)
-                    {
-                        iMovieBase.log.GenerateSilent("Could not get movie IMDb page link." + Environment.NewLine + movie.FullTitle);
-                    }
-                }
-
-                if (shouldUpdateRate == true && rateUpdated == false)
-                {
-                    if (generateLog == true)
-                    {
-                        iMovieBase.log.GenerateSilent("Could not get movie IMDb rate." + Environment.NewLine + movie.FullTitle);
-                    }
-                }
-
-                if (shouldUpdateYear == true && yearUpdated == false)
-                {
-                    if (generateLog == true)
-                    {
-                        iMovieBase.log.GenerateSilent("Could not get movie release year." + Environment.NewLine + movie.FullTitle);
-                    }
-                }
-
-                if (shouldUpdateStory == true && storyUpdated == false)
-                {
-                    if (generateLog == true)
-                    {
-                        iMovieBase.log.GenerateSilent("Could not get movie storyline." + Environment.NewLine + movie.FullTitle);
-                    }
-                }
-
-                if (shouldUpdateGenre == true && genreUpdated == false)
-                {
-                    if (generateLog == true)
-                    {
-                        iMovieBase.log.GenerateSilent("Could not get movie genres." + Environment.NewLine + movie.FullTitle);
-                    }
-                }
-
-                if (shouldUpdateDirector == true && directorUpdated == false)
-                {
-                    if (generateLog == true)
-                    {
-                        iMovieBase.log.GenerateSilent("Could not get movie directors." + Environment.NewLine + movie.FullTitle);
-                    }
-                }
-
-                if (shouldUpdateDirectorImage == true && directorImageUpdated == false)
-                {
-                    if (generateLog == true)
-                    {
-                        iMovieBase.log.GenerateSilent("Could not get director's image." + Environment.NewLine + movie.FullTitle);
-                    }
-                }
-
-                if (shouldUpdateLanguage == true && languageUpdated == false)
-                {
-                    if (generateLog == true)
-                    {
-                        iMovieBase.log.GenerateSilent("Could not get movie language." + Environment.NewLine + movie.FullTitle);
-                    }
-                }
-
-                if (shouldUpdateDuration == true || shouldUpdateImage == true || shouldUpdateLink == true ||
-                    shouldUpdateRate == true || shouldUpdateYear == true || shouldUpdateStory == true || shouldUpdateLanguage == true ||
-                    shouldUpdateDirector == true || shouldUpdateGenre == true || shouldUpdateDirectorImage == true)
-                {
-                    if (rateUpdated == true || linkUpdated == true || yearUpdated == true ||
-                        durationUpdated == true || imageUpdated == true || storyUpdated == true || languageUpdated == true ||
-                        genreUpdated == true || directorUpdated == true || directorImageUpdated == true)
+                    if (imdbPage.HasGenres == true)
                     {
                         try
                         {
-                            if (genreUpdated == true)
+                            Movie_SP.DeleteAllMovieGenre(movie.MovieID);
+
+                            int index = 0;
+                            foreach (Genre item in imdbPage.Genres)
                             {
-                                bool existedGenre = false;
-
-                                foreach (DataRow mdr in dtMovieGenre.Rows)
+                                try
                                 {
-                                    existedGenre = false;
-
-                                    foreach (Genre gen in searchProvider.IMDBMoviePage.Genre)
+                                    DataTable dtGenre = Genre_SP.GetByName(item.GenreName);
+                                    long genreID = 0;
+                                    if (dtGenre.Rows.Count > 0)
                                     {
-                                        if (mdr["GenreName"].ToString().Equals(gen.GenreName, StringComparison.CurrentCultureIgnoreCase) == true)
-                                        {
-                                            existedGenre = true;
-                                            break;
-                                        }
+                                        genreID = Convert.ToInt64(dtGenre.Rows[0]["GenreID"]);
+                                    }
+                                    else
+                                    {
+                                        genreID = Genre_SP.Insert(item);
                                     }
 
-                                    if (existedGenre == false)
-                                    {
-                                        long genID = Convert.ToInt64(mdr["GenreID"].ToString());
-
-                                        try
-                                        {
-                                            Movie_SP.DeleteMovieGenre(movie.MovieID, genID);
-                                        }
-                                        catch (Exception ex)
-                                        {
-
-                                        }
-                                    }
+                                    Movie_SP.InsertMovieGenre(movie.MovieID, genreID, index == 0);
+                                    index++;
                                 }
-
-                                int i = 0;
-
-                                foreach (Genre gen in searchProvider.IMDBMoviePage.Genre)
+                                catch(Exception ex)
                                 {
-                                    existedGenre = false;
-                                    long insertGenreID = 0;
-
-                                    foreach (DataRow mdr in dtMovieGenre.Rows)
+                                    if (generateLog == true)
                                     {
-                                        if (mdr["GenreName"].ToString().Equals(gen.GenreName, StringComparison.CurrentCultureIgnoreCase) == true)
-                                        {
-                                            existedGenre = true;
-                                            break;
-                                        }
-                                    } 
-
-                                    if (existedGenre == false)
-                                    {
-                                        foreach (DataRow alldr in dtAllGenre.Rows)
-                                        {
-                                            if (alldr["GenreName"].ToString().Equals(gen.GenreName, StringComparison.CurrentCultureIgnoreCase) == true)
-                                            {
-                                                insertGenreID = Convert.ToInt64(alldr["GenreID"].ToString());
-                                                break;
-                                            }
-                                        }
-
-                                        try
-                                        {
-                                            if (insertGenreID > 0)
-                                            {
-                                                if (i == 0)
-                                                {
-                                                    Movie_SP.InsertMovieGenre(movie.MovieID, insertGenreID, true);
-                                                }
-                                                else
-                                                {
-                                                    Movie_SP.InsertMovieGenre(movie.MovieID, insertGenreID, false);
-                                                }
-                                            }
-                                            else
-                                            {
-                                                insertGenreID = Genre_SP.Insert(gen);
-
-                                                if (insertGenreID > 0)
-                                                {
-                                                    if (i == 0)
-                                                    {
-                                                        Movie_SP.InsertMovieGenre(movie.MovieID, insertGenreID, true);
-                                                    }
-                                                    else
-                                                    {
-                                                        Movie_SP.InsertMovieGenre(movie.MovieID, insertGenreID, false);
-                                                    }
-                                                }
-                                            }
-                                        }
-                                        catch (Exception ex)
-                                        {
-                                        }
+                                        iMovieBase.log.GenerateSilent("Could not save updated movie genre." + 
+                                            Environment.NewLine + item.GenreName + Environment.NewLine + movie.FullTitle);
                                     }
 
-                                    i++;
+                                    continue;
                                 }
-                            }
-
-                            if (languageUpdated == true)
-                            {
-                                bool existedLanguage = false;
-                                 
-                                foreach (DataRow mdr in dtMovieLanguage.Rows)
-                                {
-                                    existedLanguage = false;
-
-                                    foreach (Language lang in searchProvider.IMDBMoviePage.Languages)
-                                    {
-                                        if (mdr["LanguageName"].ToString().Equals(lang.LanguageName, StringComparison.CurrentCultureIgnoreCase) == true)
-                                        {
-                                            existedLanguage = true;
-                                            break;
-                                        }
-                                    }
-
-                                    if (existedLanguage == false)
-                                    {
-                                        long langID = Convert.ToInt64(mdr["LanguageID"].ToString());
-
-                                        try
-                                        {
-                                            Movie_SP.DeleteMovieLanguage(movie.MovieID, langID);
-                                        }
-                                        catch (Exception ex)
-                                        {
-
-                                        }
-                                    }
-                                }
-
-                                foreach (Language lang in searchProvider.IMDBMoviePage.Languages)
-                                {
-                                    existedLanguage = false;
-                                    long insertLanguageID = 0;
-
-                                    foreach (DataRow mdr in dtMovieLanguage.Rows)
-                                    {
-                                        if (mdr["LanguageName"].ToString().Equals(lang.LanguageName, StringComparison.CurrentCultureIgnoreCase) == true)
-                                        {
-                                            existedLanguage = true;
-                                            break;
-                                        }
-                                    }
-
-                                    if (existedLanguage == false)
-                                    {
-                                        foreach (DataRow alldr in dtAllLanguage.Rows)
-                                        {
-                                            if (alldr["LanguageName"].ToString().Equals(lang.LanguageName, StringComparison.CurrentCultureIgnoreCase) == true)
-                                            {
-                                                insertLanguageID = Convert.ToInt64(alldr["LanguageID"].ToString());
-                                                break;
-                                            }
-                                        }
-
-                                        try
-                                        {
-                                            if (insertLanguageID > 0)
-                                            {
-                                                Movie_SP.InsertMovieLanguage(movie.MovieID, insertLanguageID);
-                                            }
-                                            else
-                                            {
-                                                insertLanguageID = Language_SP.Insert(lang);
-
-                                                if (insertLanguageID > 0)
-                                                {
-                                                    Movie_SP.InsertMovieLanguage(movie.MovieID, insertLanguageID);
-                                                }
-                                            }
-                                        }
-                                        catch (Exception ex)
-                                        {
-                                        }
-                                    }
-                                }
-                            }
-
-                            if (directorUpdated == true)
-                            {
-                                bool existedDirector = false;
-
-                                foreach (DataRow mdr in dtMovieDirector.Rows)
-                                {
-                                    existedDirector = false;
-
-                                    foreach (Person per in searchProvider.IMDBMoviePage.Directors)
-                                    {
-                                        if (Person_SP.IsSamePerson(per.FullName, per.IMDBLink, mdr) > 0)
-                                        {
-                                            existedDirector = true;
-                                            break;
-                                        }
-                                    }
-
-                                    if (existedDirector == false)
-                                    {
-                                        long personID = Convert.ToInt64(mdr["PersonID"].ToString());
-
-                                        try
-                                        {
-                                            Movie_SP.DeleteMovieDirector(movie.MovieID, personID);
-                                        }
-                                        catch (Exception ex)
-                                        {
-
-                                        }
-                                    }
-                                }
-
-                                foreach (Person per in searchProvider.IMDBMoviePage.Directors)
-                                {
-                                    existedDirector = false;
-                                    long insertDirectorID = 0;
-
-                                    foreach (DataRow mdr in dtMovieDirector.Rows)
-                                    {
-                                        if (Person_SP.IsSamePerson(per.FullName, per.IMDBLink, mdr) > 0)
-                                        {
-                                            existedDirector = true;
-                                            break;
-                                        }
-                                    }
-
-                                    if (existedDirector == false)
-                                    {
-                                        try
-                                        {
-                                            insertDirectorID = Person_SP.GetPersonID(per.FullName, per.IMDBLink);
-
-                                            if (insertDirectorID > 0)
-                                            {
-                                                Movie_SP.InsertMovieDirector(movie.MovieID, insertDirectorID);
-                                            }
-                                            else
-                                            {
-                                                insertDirectorID = Person_SP.Insert(per, false, true);
-
-                                                if (insertDirectorID > 0)
-                                                {
-                                                    Movie_SP.InsertMovieDirector(movie.MovieID, insertDirectorID);
-                                                }
-                                            }
-                                        }
-                                        catch (Exception ex)
-                                        {
-                                        }
-                                    }
-                                }
-                            }
-
-                            if (directorImageUpdated == true)
-                            {
-                                if (directorUpdated == false)
-                                {
-                                    foreach (Person p in searchProvider.IMDBMoviePage.Directors)
-                                    {
-                                        try
-                                        {
-                                            if (p.PersonID > 0 && p.PhotoLink.Length > 0)
-                                            {
-                                                Person_SP.UpdatePhotoLinkByID(p.PersonID, p.PhotoLink);
-                                            }
-                                        }
-                                        catch (Exception ex)
-                                        {
-                                        }
-                                    }
-                                }
-                                else
-                                {
-                                    dtMovieDirector = Person_SP.GetDirectorByMovieID(movie.MovieID);
-
-                                    foreach (DataRow dr in dtMovieDirector.Rows)
-                                    {
-                                        foreach (Person p in searchProvider.IMDBMoviePage.Directors)
-                                        {
-                                            if (dr["FullName"].ToString() == p.FullName && p.PersonID == 99999999)
-                                            {
-                                                Person_SP.UpdatePhotoLinkByID(Convert.ToInt64(dr["PersonID"].ToString()), p.PhotoLink);
-                                                break;
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-
-                            if (rateUpdated == true || linkUpdated == true || yearUpdated == true ||
-                                durationUpdated == true || imageUpdated == true || storyUpdated == true)
-                            {
-                                long res = 0;
-                                res = Movie_SP.UpdateOnline(movie);
-
-                                if (res > 0)
-                                {
-                                    result = enUpdateResult.Updated;
-                                }
-                            }
-                            else
-                            {
-                                result = enUpdateResult.Updated;
                             }
                         }
                         catch (Exception ex)
                         {
                             if (generateLog == true)
                             {
-                                iMovieBase.log.GenerateSilent(Messages.UpdateError + Environment.NewLine + movie.FullTitle + Environment.NewLine + ex.Message);
+                                iMovieBase.log.GenerateSilent("Could not save updated movie genres." + Environment.NewLine + movie.FullTitle);
                             }
                         }
                     }
-                    else
+
+                    if (imdbPage.HasLanguages == true)
                     {
-                        if (generateLog == true)
+                        try
                         {
-                            iMovieBase.log.GenerateSilent("Could not get online updates for this movie." + Environment.NewLine + movie.FullTitle);
+                            Movie_SP.DeleteAllMovieLanguage(movie.MovieID);
+
+                            foreach (Language item in imdbPage.Languages)
+                            {
+                                try
+                                {
+                                    DataTable dtLanguage = Language_SP.GetByName(item.LanguageName);
+                                    long languageID = 0;
+                                    if (dtLanguage.Rows.Count > 0)
+                                    {
+                                        languageID = Convert.ToInt64(dtLanguage.Rows[0]["LanguageID"]);
+                                    }
+                                    else
+                                    {
+                                        languageID = Language_SP.Insert(item);
+                                    }
+
+                                    Movie_SP.InsertMovieLanguage(movie.MovieID, languageID);
+                                }
+                                catch (Exception ex)
+                                {
+                                    if (generateLog == true)
+                                    {
+                                        iMovieBase.log.GenerateSilent("Could not save updated movie language." +
+                                            Environment.NewLine + item.LanguageName + Environment.NewLine + movie.FullTitle);
+                                    }
+
+                                    continue;
+                                }
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            if (generateLog == true)
+                            {
+                                iMovieBase.log.GenerateSilent("Could not save updated movie languages." + Environment.NewLine + movie.FullTitle);
+                            }
                         }
                     }
 
-                    Thread.Sleep(700);
+
+                    if (imdbCredits.HasDirectors)
+                    {
+                        try
+                        {
+                            Movie_SP.DeleteAllMovieDirector(movie.MovieID);
+
+                            foreach (Person item in imdbCredits.Directors)
+                            {
+                                try
+                                {
+                                    long directorID = 0;
+                                    directorID = Person_SP.GetPersonID(item.FullName, item.IMDBLink);
+
+                                    if (directorID <= 0)
+                                    {
+                                        directorID = Person_SP.Insert(item, false, true);
+                                    }
+                                    else
+                                    {
+                                        bool isActor = false;
+                                        bool isDirector = false;
+                                        Person_SP.GetTypeByID(directorID, out isActor, out isDirector);
+
+                                        if (isDirector == false)
+                                        {
+                                            AccessDatabase.Insert(QueryRepository.Director_Insert, "@PersonID", directorID);
+                                        }
+                                    }
+
+                                    Movie_SP.InsertMovieDirector(movie.MovieID, directorID);
+                                }
+                                catch (Exception ex)
+                                {
+                                    if (generateLog == true)
+                                    {
+                                        iMovieBase.log.GenerateSilent("Could not save updated movie director." +
+                                            Environment.NewLine + item.FullName + Environment.NewLine + movie.FullTitle);
+                                    }
+
+                                    continue;
+                                }
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            if (generateLog == true)
+                            {
+                                iMovieBase.log.GenerateSilent("Could not save updated movie directors." + Environment.NewLine + movie.FullTitle);
+                            }
+                        }
+                    }
+
+                    if (imdbCredits.HasActors)
+                    {
+                        try
+                        {
+                            Movie_SP.DeleteAllMovieActor(movie.MovieID);
+
+                            foreach (Person item in imdbCredits.Actors)
+                            {
+                                try
+                                {
+                                    long actorID = 0;
+                                    actorID = Person_SP.GetPersonID(item.FullName, item.IMDBLink);
+
+                                    if (actorID <= 0)
+                                    {
+                                        actorID = Person_SP.Insert(item, true, false);
+                                    }
+                                    else
+                                    {
+                                        bool isActor = false;
+                                        bool isDirector = false;
+                                        Person_SP.GetTypeByID(actorID, out isActor, out isDirector);
+
+                                        if (isActor == false)
+                                        {
+                                            AccessDatabase.Insert(QueryRepository.Actor_Insert, "@PersonID", actorID);
+                                        }
+                                    }
+
+                                    Movie_SP.InsertMovieActor(movie.MovieID, actorID);
+                                }
+                                catch (Exception ex)
+                                {
+                                    if (generateLog == true)
+                                    {
+                                        iMovieBase.log.GenerateSilent("Could not save updated movie actor." +
+                                            Environment.NewLine + item.FullName + Environment.NewLine + movie.FullTitle);
+                                    }
+
+                                    continue;
+                                }
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            if (generateLog == true)
+                            {
+                                iMovieBase.log.GenerateSilent("Could not save updated movie actors." + Environment.NewLine + movie.FullTitle);
+                            }
+                        }
+                    }
+
+                    if (updatedDirectorsImage.Count > 0)
+                    {
+                        foreach (Person item in updatedDirectorsImage)
+                        {
+                            Person_SP.UpdatePhotoLinkByID(item.PersonID, item.PhotoLink);
+                        }
+                    }
+
+                    if (updatedActorsImage.Count > 0)
+                    {
+                        foreach (Person item in updatedActorsImage)
+                        {
+                            Person_SP.UpdatePhotoLinkByID(item.PersonID, item.PhotoLink);
+                        }
+                    }
+
+                    if (imdbPage.HasDuration == true || imdbPage.HasURL == true || imdbPage.HasYear == true ||
+                        imdbPage.HasRate == true || imdbPage.HasPhotoURL == true || imdbPage.HasStoryLine == true)
+                    {
+                        long res = 0;
+                        res = Movie_SP.UpdateOnline(movie);
+
+                        if (res > 0)
+                        {
+                            result = enUpdateResult.Updated;
+                        }
+                    }
+                    else if (imdbPage.HasGenres || imdbPage.HasLanguages || 
+                        imdbCredits.HasActors || imdbCredits.HasDirectors ||
+                        updatedActorsImage.Count > 0 || updatedDirectorsImage.Count > 0)
+                    {
+                        result = enUpdateResult.Updated;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    if (generateLog == true)
+                    {
+                        iMovieBase.log.GenerateSilent(Messages.UpdateError + Environment.NewLine + movie.FullTitle + Environment.NewLine + ex.Message);
+                    }
+
+                    result = enUpdateResult.UpdateError;
                 }
 
                 if (owner != null)
@@ -3171,26 +2333,27 @@ namespace iMovie
                     (owner as frmOnlineMovieUpdate).InvokeHandle();
                 }
 
-                if (result == enUpdateResult.Updated)
+                if ((imdbPage.HasDuration == true || imdbPage.HasPhotoURL == true || imdbPage.HasURL == true || 
+                    imdbPage.HasGenres == true || imdbCredits.HasDirectors == true || imdbPage.HasLanguages == true ||
+                    imdbCredits.HasActors == true || imdbPage.HasRate == true || imdbPage.HasYear == true || 
+                    imdbPage.HasStoryLine == true || updatedActorsImage.Count > 0 || updatedDirectorsImage.Count > 0) && 
+                    result != enUpdateResult.Updated)
                 {
-                    return enUpdateResult.Updated; // Updated
-                }
-                else if ((shouldUpdateDuration == true || shouldUpdateImage == true || shouldUpdateLink == true || shouldUpdateGenre == true || shouldUpdateDirector == true || shouldUpdateDirectorImage == true || shouldUpdateLanguage == true ||
-                          shouldUpdateRate == true || shouldUpdateYear == true || shouldUpdateStory == true) && isOpen == false &&
-                          result != enUpdateResult.Updated)
-                {
-                    return enUpdateResult.NotOpen; // Not Open Banned
-                }
-                else if ((shouldUpdateDuration == true || shouldUpdateImage == true || shouldUpdateLink == true || shouldUpdateGenre == true || shouldUpdateDirector == true || shouldUpdateDirectorImage == true || shouldUpdateLanguage == true ||
-                          shouldUpdateRate == true || shouldUpdateYear == true || shouldUpdateStory == true) && isOpen == true &&
-                          result != enUpdateResult.Updated)
-                {
-                    return enUpdateResult.UpdateError; // Update Error
+                    return enUpdateResult.UpdateError;
                 }
                 else
                 {
-                    return enUpdateResult.NoNeedUpdate; // No Need Update
+                    return result;
                 }
+            }
+            catch(CouldNotLoadWebPageException ex)
+            {
+                if (owner != null)
+                {
+                    (owner as frmOnlineMovieUpdate).InvokeHandle();
+                }
+
+                return enUpdateResult.NotOpen;
             }
             catch (Exception ex)
             {
@@ -3199,26 +2362,7 @@ namespace iMovie
                     (owner as frmOnlineMovieUpdate).InvokeHandle();
                 }
 
-                if (result == enUpdateResult.Updated)
-                {
-                    return enUpdateResult.Updated; // Updated
-                }
-                else if ((shouldUpdateDuration == true || shouldUpdateImage == true || shouldUpdateLink == true || shouldUpdateGenre == true || shouldUpdateDirector == true || shouldUpdateDirectorImage == true || shouldUpdateLanguage == true ||
-                          shouldUpdateRate == true || shouldUpdateYear == true || shouldUpdateStory == true) && isOpen == false &&
-                          result != enUpdateResult.Updated)
-                {
-                    return enUpdateResult.NotOpen; // Not Open Banned
-                }
-                else if ((shouldUpdateDuration == true || shouldUpdateImage == true || shouldUpdateLink == true || shouldUpdateGenre == true || shouldUpdateDirector == true || shouldUpdateDirectorImage == true || shouldUpdateLanguage == true ||
-                          shouldUpdateRate == true || shouldUpdateYear == true || shouldUpdateStory == true) && isOpen == true &&
-                          result != enUpdateResult.Updated)
-                {
-                    return enUpdateResult.UpdateError; // Update Error
-                }
-                else
-                {
-                    return enUpdateResult.NoNeedUpdate; // No Need Update
-                }
+                return enUpdateResult.UpdateError;
             }
         }
 
@@ -3581,1330 +2725,20 @@ namespace iMovie
             }
         }
 
-        public static enUpdateResult UpdateOnlineFromIMDb(Movie movie, bool image, bool rate,
+        public static enUpdateResult UpdateOnlineFromIMDb(string url, Movie movie, bool image, bool rate,
                                                           bool year, bool duration, bool story, bool genre,
                                                           bool director, bool directorImage, bool language,
-                                                          bool ignoreValid, bool generateLog, Form owner = null)
-        { 
-            enUpdateResult result = enUpdateResult.NoNeedUpdate;
-            bool isOpen = false;
-
-            bool shouldUpdateRate = false;
-            bool shouldUpdateYear = false;
-            bool shouldUpdateDuration = false;
-            bool shouldUpdateImage = false;
-            bool shouldUpdateStory = false;
-            bool shouldUpdateGenre = false;
-            bool shouldUpdateDirector = false;
-            bool shouldUpdateDirectorImage = false;
-            bool shouldUpdateLanguage = false;
-             
-            bool rateUpdated = false;
-            bool yearUpdated = false;
-            bool durationUpdated = false;
-            bool imageUpdated = false;
-            bool storyUpdated = false;
-            bool genreUpdated = false;
-            bool directorUpdated = false;
-            bool directorImageUpdated = false;
-            bool languageUpdated = false;
-
-            DataTable dtMovieGenre = new DataTable();
-            DataTable dtAllGenre = new DataTable();
-
-            DataTable dtAllLanguage = new DataTable();
-            DataTable dtMovieLanguage = new DataTable();
-
-            DataTable dtAllDirector = new DataTable();
-            DataTable dtMovieDirector = new DataTable(); 
-
-            try
+                                                          bool actor, bool actorImage, bool ignoreValid,
+                                                          bool generateLog, Form owner = null)
+        {
+            if (string.IsNullOrEmpty(url) || !Movie_SP.IsIMDbTitlePage(url))
             {
-                IMDb imdb = new IMDb(false);
-
-                if (rate == true) 
-                {
-                    if (movie.IMDBRate == 0 || ignoreValid == false)
-                    {
-                        shouldUpdateRate = true;
-
-                        try
-                        {
-                            try
-                            {
-                                if (imdb.HasRate == false &&
-                                    imdb.HasURL == false)
-                                {
-                                    imdb = new IMDb(true, movie.IMDBLink);
-                                    isOpen = true;
-                                }
-
-                                if (imdb.HasRate == false &&
-                                    imdb.HasURL == true)
-                                {
-                                    imdb.Update();
-                                    isOpen = true;
-                                }
-                            }
-                            catch (Exception ex)
-                            {
-                                
-                            }
-
-                            movie.IMDBRate = imdb.Rate;
-                            rateUpdated = true;
-                        }
-                        catch (Exception ex)
-                        {
-
-                        }
-                    }
-                }
-
-
-                if (year == true)
-                {
-                    if (movie.ProductYear == 0 || ignoreValid == false)
-                    {
-                        shouldUpdateYear = true;
-
-                        try
-                        {
-                            try
-                            {
-                                if (imdb.HasYear == false &&
-                                    imdb.HasURL == false)
-                                {
-                                    imdb = new IMDb(true, movie.IMDBLink);
-                                    isOpen = true;
-                                }
-
-                                if (imdb.HasYear == false &&
-                                    imdb.HasURL == true)
-                                {
-                                    imdb.Update();
-                                    isOpen = true;
-                                }
-                            }
-                            catch (Exception ex)
-                            {
-                               
-                            }
-
-                            movie.ProductYear = imdb.Year;
-                            yearUpdated = true;
-
-                            if (shouldUpdateRate == true)
-                            {
-                                if (imdb.HasRate == true)
-                                {
-                                    movie.IMDBRate = imdb.Rate;
-                                    rateUpdated = true;
-                                }
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-
-                        }
-                    }
-                }
-
-                if (duration == true)
-                {
-                    if (movie.Duration.TotalSeconds == 0 || ignoreValid == false)
-                    {
-                        shouldUpdateDuration = true;
-
-                        try
-                        {
-                            try
-                            {
-                                if (imdb.HasDuration == false &&
-                                    imdb.HasURL == false)
-                                {
-                                    imdb = new IMDb(true, movie.IMDBLink);
-                                    isOpen = true;
-                                }
-
-                                if (imdb.HasDuration == false &&
-                                    imdb.HasURL == true)
-                                {
-                                    imdb.Update();
-                                    isOpen = true;
-                                }
-                            }
-                            catch (Exception ex)
-                            {
-                            }
-                      
-                            movie.Duration = imdb.Duration;
-                            durationUpdated = true;
-
-                            if (shouldUpdateRate == true)
-                            {
-                                if (imdb.HasRate == true)
-                                {
-                                    movie.IMDBRate = imdb.Rate;
-                                    rateUpdated = true;
-                                }
-                            }
-
-                            if (shouldUpdateYear == true)
-                            {
-                                if (imdb.HasYear == true)
-                                {
-                                    movie.ProductYear = imdb.Year;
-                                    yearUpdated = true;
-                                }
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-
-                        }
-                    }
-                }
-
-                if (story == true)
-                {
-                    if (movie.StoryLine.Length == 0 || ignoreValid == false)
-                    {
-                        shouldUpdateStory = true;
-
-                        try
-                        {
-                            try
-                            {
-                                if (imdb.HasStoryLine == false &&
-                                    imdb.HasURL == false)
-                                {
-                                    imdb = new IMDb(true, movie.IMDBLink);
-                                    isOpen = true;
-                                }
-
-                                if (imdb.HasStoryLine == false &&
-                                    imdb.HasURL == true)
-                                {
-                                    imdb.Update();
-                                    isOpen = true;
-                                }
-                            }
-                            catch (Exception ex)
-                            {
-                            }
-
-                            movie.StoryLine = imdb.StoryLine;
-                            storyUpdated = true;
-
-                            if (shouldUpdateRate == true)
-                            {
-                                if (imdb.HasRate == true)
-                                {
-                                    movie.IMDBRate = imdb.Rate;
-                                    rateUpdated = true;
-                                }
-                            }
-
-                            if (shouldUpdateYear == true)
-                            {
-                                if (imdb.HasYear == true)
-                                {
-                                    movie.ProductYear = imdb.Year;
-                                    yearUpdated = true;
-                                }
-                            }
-
-                            if (shouldUpdateDuration == true)
-                            {
-                                if (imdb.HasDuration == true)
-                                {
-                                    movie.Duration = imdb.Duration;
-                                    durationUpdated = true;
-                                }
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-
-                        }
-                    }
-                }
-
-                if (genre == true)
-                {
-                    dtMovieGenre = Genre_SP.GetByMovieID(movie.MovieID);
-
-                    if (dtMovieGenre.Rows.Count == 0 || ignoreValid == false)
-                    {
-                        shouldUpdateGenre = true;
-
-                        if (dtAllGenre.Rows.Count == 0)
-                        {
-                            dtAllGenre = Genre_SP.GetList();
-                        }
-
-                        try
-                        {
-                            try
-                            {
-                                if (imdb.HasGenre == false &&
-                                    imdb.HasURL == false)
-                                {
-                                    imdb = new IMDb(true, movie.IMDBLink);
-                                    isOpen = true;
-                                }
-
-                                if (imdb.HasGenre == false &&
-                                    imdb.HasURL == true)
-                                {
-                                    imdb.Update();
-                                    isOpen = true;
-                                }
-                            }
-                            catch (Exception ex)
-                            {
-                            }
-
-                            genreUpdated = true;
-
-                            if (shouldUpdateRate == true)
-                            {
-                                if (imdb.HasRate == true)
-                                {
-                                    movie.IMDBRate = imdb.Rate;
-                                    rateUpdated = true;
-                                }
-                            }
-
-                            if (shouldUpdateYear == true)
-                            {
-                                if (imdb.HasYear == true)
-                                {
-                                    movie.ProductYear = imdb.Year;
-                                    yearUpdated = true;
-                                }
-                            }
-
-                            if (shouldUpdateDuration == true)
-                            {
-                                if (imdb.HasDuration == true)
-                                {
-                                    movie.Duration = imdb.Duration;
-                                    durationUpdated = true;
-                                }
-                            }
-
-                            if (shouldUpdateStory == true)
-                            {
-                                if (imdb.HasStoryLine == true)
-                                {
-                                    movie.StoryLine = imdb.StoryLine;
-                                    storyUpdated = true;
-                                }
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-
-                        }
-                    }
-                }
-
-                if (director == true)
-                {
-                    dtMovieDirector = Person_SP.GetDirectorByMovieID(movie.MovieID);
-
-                    if (dtMovieDirector.Rows.Count == 0 || ignoreValid == false)
-                    {
-                        shouldUpdateDirector = true;
-
-                        if (dtAllDirector.Rows.Count == 0)
-                        {
-                            dtAllDirector = Person_SP.GetList();
-                        }
-
-                        try
-                        {
-                            try
-                            {
-                                if (imdb.HasDirector == false &&
-                                    imdb.HasURL == false)
-                                {
-                                    imdb = new IMDb(true, movie.IMDBLink);
-                                    isOpen = true;
-                                }
-
-                                if (imdb.HasDirector == false &&
-                                    imdb.HasURL == true)
-                                {
-                                    imdb.Update();
-                                    isOpen = true;
-                                }
-                            }
-                            catch (Exception ex)
-                            {
-                            }
-
-                            directorUpdated = true;
-
-                            if (shouldUpdateRate == true)
-                            {
-                                if (imdb.HasRate == true)
-                                {
-                                    movie.IMDBRate = imdb.Rate;
-                                    rateUpdated = true;
-                                }
-                            }
-
-                            if (shouldUpdateYear == true)
-                            {
-                                if (imdb.HasYear == true)
-                                {
-                                    movie.ProductYear = imdb.Year;
-                                    yearUpdated = true;
-                                }
-                            }
-
-                            if (shouldUpdateDuration == true)
-                            {
-                                if (imdb.HasDuration == true)
-                                {
-                                    movie.Duration = imdb.Duration;
-                                    durationUpdated = true;
-                                }
-                            }
-
-                            if (shouldUpdateStory == true)
-                            {
-                                if (imdb.HasStoryLine == true)
-                                {
-                                    movie.StoryLine = imdb.StoryLine;
-                                    storyUpdated = true;
-                                }
-                            }
-
-                            if (shouldUpdateGenre == true)
-                            {
-                                if (imdb.HasGenre == true)
-                                {
-                                    genreUpdated = true;
-                                }
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-
-                        }
-                    }
-                }
-
-                if (language == true)
-                {
-                    dtMovieLanguage = Language_SP.GetByMovieID(movie.MovieID);
-
-                    if (dtMovieLanguage.Rows.Count == 0 || ignoreValid == false)
-                    {
-                        shouldUpdateLanguage = true;
-
-                        if (dtAllLanguage.Rows.Count == 0)
-                        {
-                            dtAllLanguage = Language_SP.GetList();
-                        }
-
-                        try
-                        {
-                            try
-                            {
-                                if (imdb.HasLanguage == false &&
-                                    imdb.HasURL == false)
-                                {
-                                    imdb = new IMDb(true, movie.IMDBLink);
-                                    isOpen = true;
-                                }
-
-                                if (imdb.HasLanguage == false &&
-                                    imdb.HasURL == true)
-                                {
-                                    imdb.Update();
-                                    isOpen = true;
-                                }
-                            }
-                            catch (Exception ex)
-                            {
-                            }
-
-                            languageUpdated = true;
-
-                            if (shouldUpdateRate == true)
-                            {
-                                if (imdb.HasRate == true)
-                                {
-                                    movie.IMDBRate = imdb.Rate;
-                                    rateUpdated = true;
-                                }
-                            }
-
-                            if (shouldUpdateYear == true)
-                            {
-                                if (imdb.HasYear == true)
-                                {
-                                    movie.ProductYear = imdb.Year;
-                                    yearUpdated = true;
-                                }
-                            }
-
-                            if (shouldUpdateDuration == true)
-                            {
-                                if (imdb.HasDuration == true)
-                                {
-                                    movie.Duration = imdb.Duration;
-                                    durationUpdated = true;
-                                }
-                            }
-
-                            if (shouldUpdateStory == true)
-                            {
-                                if (imdb.HasStoryLine == true)
-                                {
-                                    movie.StoryLine = imdb.StoryLine;
-                                    storyUpdated = true;
-                                }
-                            }
-
-                            if (shouldUpdateGenre == true)
-                            {
-                                if (imdb.HasGenre == true)
-                                {
-                                    genreUpdated = true;
-                                }
-                            }
-
-                            if (shouldUpdateDirector == true)
-                            {
-                                if (imdb.HasDirector == true)
-                                {
-                                    directorUpdated = true;
-                                }
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-
-                        }
-                    }
-                }
-
-                if (directorImage == true)
-                {
-                    dtMovieDirector = Person_SP.GetDirectorByMovieID(movie.MovieID);
-
-                    try
-                    {
-                        try
-                        {
-                            if (directorUpdated == true)
-                            {
-                                shouldUpdateDirectorImage = true;
-                            }
-                            else
-                            {
-                                foreach (DataRow dr in dtMovieDirector.Rows)
-                                {
-                                    if (File.Exists(dr["PhotoLink"].ToString()) == false)
-                                    {
-                                        shouldUpdateDirectorImage = true;
-                                        break;
-                                    }
-                                }
-                            }
-                            
-                            if (shouldUpdateDirectorImage == true && imdb.HasURL == false && imdb.HasDirector == false)
-                            {
-                                try
-                                {
-                                    if (imdb.HasURL == false && imdb.HasDirector == false)
-                                    {
-                                        imdb = new IMDb(true, movie.IMDBLink);
-                                        isOpen = true;
-                                    }
-
-                                    if (imdb.HasURL == true && imdb.HasDirector == false)
-                                    {
-                                        imdb.Update();
-                                        isOpen = true;
-                                    }
-                                }
-                                catch (Exception ex)
-                                {
-                                }
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-
-                        }
-
-                        if (imdb.HasDirector == true)
-                        {
-                            if (Directory.Exists(PathUtils.GetApplicationPersonPath()) == false)
-                            {
-                                Directory.CreateDirectory(PathUtils.GetApplicationPersonPath());
-                            }
-
-                            if (Directory.Exists(PathUtils.GetApplicationTempPath()) == false)
-                            {
-                                Directory.CreateDirectory(PathUtils.GetApplicationTempPath());
-                            }
-
-                            if (directorUpdated == false)
-                            {
-                                foreach (DataRow dr in dtMovieDirector.Rows)
-                                {
-                                    if (File.Exists(dr["PhotoLink"].ToString()) == false)
-                                    {
-                                        foreach (Person p in imdb.Directors)
-                                        {
-                                            if (dr["FullName"].ToString() == p.FullName && p.PhotoLink.Length > 0)
-                                            {
-                                                if (File.Exists(PersonPhotoPath + dr["FullName"].ToString() + ".jpg") == false)
-                                                {
-                                                    string realName = p.FullName + Path.GetExtension(p.PhotoLink);
-                                                    string realImageLink = PersonPhotoPath + realName;
-                                                    string realTemp = PathUtils.GetApplicationTempPath() + realName;
-
-                                                    IMDb.DownloadImage(p.PhotoLink, realTemp);
-                                                    isOpen = true;
-
-                                                    InsertManager im = new InsertManager(generateLog, false);
-                                                    realImageLink = im.RenameFile(realTemp, realImageLink);
-
-                                                    if (File.Exists(realImageLink) == true)
-                                                    {
-                                                        p.PhotoLink = Path.GetFileName(realImageLink);
-                                                        p.PersonID = Convert.ToInt64(dr["PersonID"].ToString());
-                                                        directorImageUpdated = true;
-                                                    }
-
-                                                    File.Delete(realTemp);
-                                                    break;
-                                                }
-                                                else
-                                                {
-                                                    p.PhotoLink = dr["FullName"].ToString() + ".jpg";
-                                                    p.PersonID = Convert.ToInt64(dr["PersonID"].ToString());
-                                                    directorImageUpdated = true;
-                                                    break;
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                            else
-                            {
-                                foreach (Person p in imdb.Directors)
-                                {
-                                    if (File.Exists(PersonPhotoPath + p.FullName + ".jpg") == false)
-                                    {
-                                        string realName = p.FullName + Path.GetExtension(p.PhotoLink);
-                                        string realImageLink = PersonPhotoPath + realName;
-                                        string realTemp = PathUtils.GetApplicationTempPath() + realName;
-
-                                        IMDb.DownloadImage(p.PhotoLink, realTemp);
-                                        isOpen = true;
-
-                                        InsertManager im = new InsertManager(generateLog, false);
-                                        realImageLink = im.RenameFile(realTemp, realImageLink);
-
-                                        if (File.Exists(realImageLink) == true)
-                                        {
-                                            p.PhotoLink = Path.GetFileName(realImageLink);
-                                            p.PersonID = 99999999;
-                                            directorImageUpdated = true;
-                                        }
-
-                                        File.Delete(realTemp);
-                                    }
-                                    else
-                                    {
-                                        p.PhotoLink = p.FullName + ".jpg";
-                                        p.PersonID = 99999999;
-                                        directorImageUpdated = true;
-                                    }
-                                }
-                            }
-                        }
-
-                        if (shouldUpdateRate == true)
-                        {
-                            if (imdb.HasRate == true)
-                            {
-                                movie.IMDBRate = imdb.Rate;
-                                rateUpdated = true;
-                            }
-                        }
-
-                        if (shouldUpdateYear == true)
-                        {
-                            if (imdb.HasYear == true)
-                            {
-                                movie.ProductYear = imdb.Year;
-                                yearUpdated = true;
-                            }
-                        }
-
-                        if (shouldUpdateDuration == true)
-                        {
-                            if (imdb.HasDuration == true)
-                            {
-                                movie.Duration = imdb.Duration;
-                                durationUpdated = true;
-                            }
-                        }
-
-                        if (shouldUpdateStory == true)
-                        {
-                            if (imdb.HasStoryLine == true)
-                            {
-                                movie.StoryLine = imdb.StoryLine;
-                                storyUpdated = true;
-                            }
-                        }
-
-                        if (shouldUpdateGenre == true)
-                        {
-                            if (imdb.HasGenre == true)
-                            {
-                                genreUpdated = true;
-                            }
-                        }
-
-                        if (shouldUpdateDirector == true)
-                        {
-                            if (imdb.HasDirector == true)
-                            {
-                                directorUpdated = true;
-                            }
-                        }
-
-                        if (shouldUpdateLanguage == true)
-                        {
-                            if (imdb.HasLanguage == true)
-                            {
-                                languageUpdated = true;
-                            }
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-
-                    }
-                }
-
-                if (image == true)
-                {
-
-                    if (File.Exists(PathUtils.GetApplicationMoviePosterPath() + movie.PosterLink) == false || ignoreValid == false)
-                    {
-                        shouldUpdateImage = true;
-
-                        try
-                        {
-                            try
-                            {
-                                try
-                                {
-                                    if (imdb.HasPhotoURL == false &&
-                                        imdb.HasURL == false)
-                                    {
-                                        imdb = new IMDb(true, movie.IMDBLink);
-                                        isOpen = true;
-                                    }
-
-                                    if (imdb.HasPhotoURL == false &&
-                                        imdb.HasURL == true)
-                                    {
-                                        imdb.Update();
-                                        isOpen = true;
-                                    }
-                                }
-                                catch (Exception ex)
-                                {
-
-                                }
-                                
-
-                                if (shouldUpdateRate == true)
-                                {
-                                    if (imdb.HasRate == true)
-                                    {
-                                        movie.IMDBRate = imdb.Rate;
-                                        rateUpdated = true;
-                                    }
-                                }
-
-                                if (shouldUpdateYear == true)
-                                {
-                                    if (imdb.HasYear == true)
-                                    {
-                                        movie.ProductYear = imdb.Year;
-                                        yearUpdated = true;
-                                    }
-                                }
-
-                                if (shouldUpdateDuration == true)
-                                {
-                                    if (imdb.HasDuration == true)
-                                    {
-                                        movie.Duration = imdb.Duration;
-                                        durationUpdated = true;
-                                    }
-                                }
-
-                                if (shouldUpdateStory == true)
-                                {
-                                    if (imdb.HasStoryLine == true)
-                                    {
-                                        movie.StoryLine = imdb.StoryLine;
-                                        storyUpdated = true;
-                                    }
-                                }
-
-                                if (shouldUpdateGenre == true)
-                                {
-                                    if (imdb.HasGenre == true)
-                                    {
-                                        genreUpdated = true;
-                                    }
-                                }
-
-                                if (shouldUpdateDirector == true)
-                                {
-                                    if (imdb.HasDirector == true)
-                                    {
-                                        directorUpdated = true;
-                                    }
-                                }
-
-                                if (shouldUpdateLanguage == true)
-                                {
-                                    if (imdb.HasLanguage == true)
-                                    {
-                                        languageUpdated = true;
-                                    }
-                                }
-                            }
-                            catch (Exception ex)
-                            {
-
-                            }
-
-                            if (imdb.HasPhotoURL == true)
-                            {
-                                string realName = movie.FullTitle + Path.GetExtension(imdb.PhotoURL);
-                                string realImageLink = PathUtils.GetApplicationMoviePosterPath() + realName;
-                                string realTemp = PathUtils.GetApplicationTempPath() + realName;
-
-                                if (Directory.Exists(PathUtils.GetApplicationMoviePosterPath()) == false)
-                                {
-                                    Directory.CreateDirectory(PathUtils.GetApplicationMoviePosterPath());
-                                }
-
-                                if (Directory.Exists(PathUtils.GetApplicationTempPath()) == false)
-                                {
-                                    Directory.CreateDirectory(PathUtils.GetApplicationTempPath());
-                                }
-
-                                IMDb.DownloadImage(imdb.PhotoURL, realTemp);
-                                isOpen = true;
-
-                                InsertManager im = new InsertManager(generateLog, false);
-                                realImageLink = im.RenameFile(realTemp, realImageLink);
-
-                                if (File.Exists(realImageLink) == true)
-                                {
-                                    movie.PosterLink = Path.GetFileName(realImageLink);
-                                    imageUpdated = true;
-                                }
-
-                                File.Delete(realTemp);
-                            }
-                            else
-                            {
-                                string realName = movie.FullTitle + ".jpg";
-                                string realImageLink = PathUtils.GetApplicationMoviePosterPath() + realName;
-
-                                File.Delete(realImageLink);
-
-                                movie.PosterLink = "";
-                                imageUpdated = true;
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            
-                        }
-                    }
-                }
-
-                if (shouldUpdateDuration == true && durationUpdated == false)
-                {
-                    if (generateLog == true)
-                    {
-                        iMovieBase.log.GenerateSilent("Could not get movie duration." + Environment.NewLine + movie.FullTitle);
-                    }
-                }
-
-                if (shouldUpdateImage == true && imageUpdated == false)
-                {
-                    if (generateLog == true)
-                    {
-                        iMovieBase.log.GenerateSilent("Could not get movie poster image." + Environment.NewLine + movie.FullTitle);
-                    }
-                }
-
-                if (shouldUpdateRate == true && rateUpdated == false)
-                {
-                    if (generateLog == true)
-                    {
-                        iMovieBase.log.GenerateSilent("Could not get movie IMDb rate." + Environment.NewLine + movie.FullTitle);
-                    }
-                }
-
-                if (shouldUpdateYear == true && yearUpdated == false)
-                {
-                    if (generateLog == true)
-                    {
-                        iMovieBase.log.GenerateSilent("Could not get movie release year." + Environment.NewLine + movie.FullTitle);
-                    }
-                }
-
-                if (shouldUpdateStory == true && storyUpdated == false)
-                {
-                    if (generateLog == true)
-                    {
-                        iMovieBase.log.GenerateSilent("Could not get movie storyline." + Environment.NewLine + movie.FullTitle);
-                    }
-                }
-
-                if (shouldUpdateGenre == true && genreUpdated == false)
-                {
-                    if (generateLog == true)
-                    {
-                        iMovieBase.log.GenerateSilent("Could not get movie genres." + Environment.NewLine + movie.FullTitle);
-                    }
-                }
-
-                if (shouldUpdateDirector == true && directorUpdated == false)
-                {
-                    if (generateLog == true)
-                    {
-                        iMovieBase.log.GenerateSilent("Could not get movie directors." + Environment.NewLine + movie.FullTitle);
-                    }
-                }
-
-                if (shouldUpdateDirectorImage == true && directorImageUpdated == false)
-                {
-                    if (generateLog == true)
-                    {
-                        iMovieBase.log.GenerateSilent("Could not get director image." + Environment.NewLine + movie.FullTitle);
-                    }
-                }
-
-                if (shouldUpdateLanguage == true && languageUpdated == false)
-                {
-                    if (generateLog == true)
-                    {
-                        iMovieBase.log.GenerateSilent("Could not get movie language." + Environment.NewLine + movie.FullTitle);
-                    }
-                }
-
-                if (shouldUpdateDuration == true || shouldUpdateImage == true || shouldUpdateGenre == true || shouldUpdateDirector ==true || shouldUpdateDirectorImage == true || shouldUpdateLanguage == true ||
-                    shouldUpdateRate == true || shouldUpdateYear == true || shouldUpdateStory == true)
-                {
-                    if (rateUpdated == true || yearUpdated == true || genreUpdated == true || directorUpdated ==true || directorImageUpdated == true || languageUpdated == true ||
-                        durationUpdated == true || imageUpdated == true || storyUpdated == true)
-                    {
-                        try
-                        {
-                            if (genreUpdated == true)
-                            {
-                                bool existedGenre = false;
-
-                                foreach (DataRow mdr in dtMovieGenre.Rows)
-                                {
-                                    existedGenre = false;
-
-                                    foreach (Genre gen in imdb.Genre)
-                                    {
-                                        if (mdr["GenreName"].ToString().Equals(gen.GenreName, StringComparison.CurrentCultureIgnoreCase) == true)
-                                        {
-                                            existedGenre = true;
-                                            break;
-                                        }
-                                    }
-
-                                    if (existedGenre == false)
-                                    {
-                                        long genID = Convert.ToInt64(mdr["GenreID"].ToString());
-
-                                        try
-                                        {
-                                            Movie_SP.DeleteMovieGenre(movie.MovieID, genID);
-                                        }
-                                        catch (Exception ex)
-                                        {
-
-                                        }
-                                    }
-                                }
-
-                                int i = 0;
-
-                                foreach (Genre gen in imdb.Genre)
-                                {
-                                    existedGenre = false;
-                                    long insertGenreID = 0;
-
-                                    foreach (DataRow mdr in dtMovieGenre.Rows)
-                                    {
-                                        if (mdr["GenreName"].ToString().Equals(gen.GenreName, StringComparison.CurrentCultureIgnoreCase) == true)
-                                        {
-                                            existedGenre = true;
-                                            break;
-                                        }
-                                    } 
-
-                                    if (existedGenre == false)
-                                    {
-                                        foreach (DataRow alldr in dtAllGenre.Rows)
-                                        {
-                                            if (alldr["GenreName"].ToString().Equals(gen.GenreName, StringComparison.CurrentCultureIgnoreCase) == true)
-                                            {
-                                                insertGenreID = Convert.ToInt64(alldr["GenreID"].ToString());
-                                                break;
-                                            }
-                                        }
-
-                                        try
-                                        {
-                                            if (insertGenreID > 0)
-                                            {
-                                                if (i == 0)
-                                                {
-                                                    Movie_SP.InsertMovieGenre(movie.MovieID, insertGenreID, true);
-                                                }
-                                                else
-                                                {
-                                                    Movie_SP.InsertMovieGenre(movie.MovieID, insertGenreID, false);
-                                                }
-                                            }
-                                            else
-                                            {
-                                                insertGenreID = Genre_SP.Insert(gen);
-
-                                                if (insertGenreID > 0)
-                                                {
-                                                    if (i == 0)
-                                                    {
-                                                        Movie_SP.InsertMovieGenre(movie.MovieID, insertGenreID, true);
-                                                    }
-                                                    else
-                                                    {
-                                                        Movie_SP.InsertMovieGenre(movie.MovieID, insertGenreID, false);
-                                                    }
-                                                }
-                                            }
-                                        }
-                                        catch (Exception ex)
-                                        {
-                                        }
-                                    }
-                                }
-                            }
-
-                            if (languageUpdated == true)
-                            {
-                                bool existedLanguage = false;
-
-                                foreach (DataRow mdr in dtMovieLanguage.Rows)
-                                {
-                                    existedLanguage = false;
-
-                                    foreach (Language lang in imdb.Languages)
-                                    {
-                                        if (mdr["LanguageName"].ToString().Equals(lang.LanguageName, StringComparison.CurrentCultureIgnoreCase) == true)
-                                        {
-                                            existedLanguage = true;
-                                            break;
-                                        }
-                                    }
-
-                                    if (existedLanguage == false)
-                                    {
-                                        long langID = Convert.ToInt64(mdr["LanguageID"].ToString());
-
-                                        try
-                                        {
-                                            Movie_SP.DeleteMovieLanguage(movie.MovieID, langID);
-                                        }
-                                        catch (Exception ex)
-                                        {
-
-                                        }
-                                    }
-                                }
-
-                                foreach (Language lang in imdb.Languages)
-                                {
-                                    existedLanguage = false;
-                                    long insertLanguageID = 0;
-
-                                    foreach (DataRow mdr in dtMovieLanguage.Rows)
-                                    {
-                                        if (mdr["LanguageName"].ToString().Equals(lang.LanguageName, StringComparison.CurrentCultureIgnoreCase) == true)
-                                        {
-                                            existedLanguage = true;
-                                            break;
-                                        }
-                                    }
-
-                                    if (existedLanguage == false)
-                                    {
-                                        foreach (DataRow alldr in dtAllLanguage.Rows)
-                                        {
-                                            if (alldr["LanguageName"].ToString().Equals(lang.LanguageName, StringComparison.CurrentCultureIgnoreCase) == true)
-                                            {
-                                                insertLanguageID = Convert.ToInt64(alldr["LanguageID"].ToString());
-                                                break;
-                                            }
-                                        }
-
-                                        try
-                                        {
-                                            if (insertLanguageID > 0)
-                                            {
-                                                Movie_SP.InsertMovieLanguage(movie.MovieID, insertLanguageID);
-                                            }
-                                            else
-                                            {
-                                                insertLanguageID = Language_SP.Insert(lang);
-
-                                                if (insertLanguageID > 0)
-                                                {
-                                                    Movie_SP.InsertMovieLanguage(movie.MovieID, insertLanguageID);
-                                                }
-                                            }
-                                        }
-                                        catch (Exception ex)
-                                        {
-                                        }
-                                    }
-                                }
-                            }
-
-                            if (directorUpdated == true)
-                            {
-                                bool existedDirector = false;
-
-                                foreach (DataRow mdr in dtMovieDirector.Rows)
-                                {
-                                    existedDirector = false;
-
-                                    foreach (Person per in imdb.Directors)
-                                    {
-                                        if (Person_SP.IsSamePerson(per.FullName, per.IMDBLink, mdr) > 0)
-                                        {
-                                            existedDirector = true;
-                                            break;
-                                        }
-                                    }
-
-                                    if (existedDirector == false)
-                                    {
-                                        long personID = Convert.ToInt64(mdr["PersonID"].ToString());
-
-                                        try
-                                        {
-                                            Movie_SP.DeleteMovieDirector(movie.MovieID, personID);
-                                        }
-                                        catch (Exception ex)
-                                        {
-
-                                        }
-                                    }
-                                }
-
-                                foreach (Person per in imdb.Directors)
-                                {
-                                    existedDirector = false;
-                                    long insertDirectorID = 0;
-
-                                    foreach (DataRow mdr in dtMovieDirector.Rows)
-                                    {
-                                        if (Person_SP.IsSamePerson(per.FullName, per.IMDBLink, mdr) > 0)
-                                        {
-                                            existedDirector = true;
-                                            break;
-                                        }
-                                    }
-
-                                    if (existedDirector == false)
-                                    {   
-                                        try
-                                        {
-                                            insertDirectorID = Person_SP.GetPersonID(per.FullName, per.IMDBLink);
-
-                                            if (insertDirectorID > 0)
-                                            {
-                                                Movie_SP.InsertMovieDirector(movie.MovieID, insertDirectorID);
-                                            }
-                                            else
-                                            {
-                                                insertDirectorID = Person_SP.Insert(per, false, true);
-
-                                                if (insertDirectorID > 0)
-                                                {
-                                                    Movie_SP.InsertMovieDirector(movie.MovieID, insertDirectorID);
-                                                }
-                                            }
-                                        }
-                                        catch (Exception ex)
-                                        {
-                                        }
-                                    }
-                                }
-                            }
-
-                            if (directorImageUpdated == true)
-                            {
-                                if (directorUpdated == false)
-                                {
-                                    foreach (Person p in imdb.Directors)
-                                    {
-                                        try
-                                        {
-                                            if (p.PersonID > 0 && p.PhotoLink.Length > 0)
-                                            {
-                                                Person_SP.UpdatePhotoLinkByID(p.PersonID, p.PhotoLink);
-                                            }
-                                        }
-                                        catch (Exception ex)
-                                        {
-                                        }
-                                    }
-                                }
-                                else
-                                {
-                                    dtMovieDirector = Person_SP.GetDirectorByMovieID(movie.MovieID);
-
-                                    foreach (DataRow dr in dtMovieDirector.Rows)
-                                    {
-                                        foreach (Person p in imdb.Directors)
-                                        {
-                                            if (dr["FullName"].ToString() == p.FullName && p.PersonID == 99999999)
-                                            {
-                                                Person_SP.UpdatePhotoLinkByID(Convert.ToInt64(dr["PersonID"].ToString()), p.PhotoLink);
-                                                break;
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-
-                            if (rateUpdated == true || yearUpdated == true ||
-                                durationUpdated == true || imageUpdated == true || storyUpdated == true)
-                            {
-
-                                movie.IMDBLink = imdb.URL;
-
-                                long res = 0;
-                                res = Movie_SP.UpdateOnline(movie);
-
-                                if (res > 0)
-                                {
-                                    result = enUpdateResult.Updated;
-                                }
-                            }
-                            else
-                            {
-                                result = enUpdateResult.Updated;
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            if (generateLog == true)
-                            {
-                                iMovieBase.log.GenerateSilent(Messages.UpdateError + Environment.NewLine + movie.FullTitle + Environment.NewLine + ex.Message);
-                            }
-                        }
-                    }
-                    else
-                    {
-                        if (generateLog == true)
-                        {
-                            iMovieBase.log.GenerateSilent("Could not get online updates for this movie." + Environment.NewLine + movie.FullTitle);
-                        }
-                    }
-
-                    Thread.Sleep(700);
-                }
-
-                if (owner != null)
-                {
-                    (owner as frmOnlineMovieUpdate).InvokeHandle();
-                }
-
-                if (result == enUpdateResult.Updated)
-                {
-                    return enUpdateResult.Updated; // Updated
-                }
-                else if ((shouldUpdateDuration == true || shouldUpdateImage == true || shouldUpdateGenre == true || shouldUpdateDirector == true || shouldUpdateDirectorImage == true || shouldUpdateLanguage == true ||
-                          shouldUpdateRate == true || shouldUpdateYear == true || shouldUpdateStory == true) && isOpen == false &&
-                          result != enUpdateResult.Updated)
-                {
-                    return enUpdateResult.NotOpen; // Not Open Banned
-                }
-                else if ((shouldUpdateDuration == true || shouldUpdateImage == true || shouldUpdateGenre == true || shouldUpdateDirector == true || shouldUpdateDirectorImage == true || shouldUpdateLanguage == true ||
-                          shouldUpdateRate == true || shouldUpdateYear == true || shouldUpdateStory == true) && isOpen == true &&
-                          result != enUpdateResult.Updated)
-                {
-                    return enUpdateResult.UpdateError; // Update Error
-                }
-                else
-                {
-                    return enUpdateResult.NoNeedUpdate; // No Need Update
-                }
+                return enUpdateResult.UpdateError;
             }
-            catch (Exception ex)
-            {
-                if (owner != null)
-                {
-                    (owner as frmOnlineMovieUpdate).InvokeHandle();
-                }
 
-                if (result == enUpdateResult.Updated)
-                {
-                    return enUpdateResult.Updated; // Updated
-                }
-                else if ((shouldUpdateDuration == true || shouldUpdateImage == true || shouldUpdateGenre == true || shouldUpdateDirector == true || shouldUpdateDirectorImage == true || shouldUpdateLanguage == true ||
-                          shouldUpdateRate == true || shouldUpdateYear == true || shouldUpdateStory == true) && isOpen == false &&
-                          result != enUpdateResult.Updated)
-                {
-                    return enUpdateResult.NotOpen; // Not Open Banned
-                }
-                else if ((shouldUpdateDuration == true || shouldUpdateImage == true || shouldUpdateGenre == true || shouldUpdateDirector == true || shouldUpdateDirectorImage == true || shouldUpdateLanguage == true ||
-                          shouldUpdateRate == true || shouldUpdateYear == true || shouldUpdateStory == true) && isOpen == true &&
-                          result != enUpdateResult.Updated)
-                {
-                    return enUpdateResult.UpdateError; // Update Error
-                }
-                else
-                {
-                    return enUpdateResult.NoNeedUpdate; // No Need Update
-                }
-            }
+            movie.IMDBLink = url;
+            return Movie_SP.UpdateOnline(movie, image, rate, true, year, duration, story, genre, director, 
+                directorImage, language, actor, actorImage, ignoreValid, generateLog, false, owner);
         }
 
         public static long RequestMovieCopyDelete(long movieID)

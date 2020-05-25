@@ -72,7 +72,7 @@ namespace iMovie
             }
         }
 
-        public static DataTable GetByName(string personName = "", bool isActor = false, bool isDirector = false)
+        public static DataTable GetByName(string personName, bool isActor = false, bool isDirector = false)
         {
             try
             {

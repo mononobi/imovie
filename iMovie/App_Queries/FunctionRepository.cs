@@ -9,27 +9,27 @@ namespace iMovie
         public const string CountGenreName =
         @"select count(*) as value
         from Genre
-        where GenreName=@GenreName";
+        where lower(GenreName)=lower(@GenreName)";
 
         public const string CountLanguageName =
         @"select count(*) as value
         from _Language 
-        where LanguageName=@LanguageName";
+        where lower(LanguageName)=lower(@LanguageName)";
 
         public const string CountPersonIMDBLink =
         @"select count(*) as value
         from Person
-        where IMDBLink=@PersonIMDBLink";
+        where lower(IMDBLink)=lower(@PersonIMDBLink)";
 
         public const string CountRootPath =
         @"select count(*) as value
         from MovieRootPath 
-        where PathString=@PathString";
+        where lower(PathString)=lower(@PathString)";
 
         public const string CountUsername =
         @"select count(*) as value
         from Users 
-        where Username=@Username";
+        where lower(Username)=lower(@Username)";
 
         public const string CountDirector =
         @"select count(PersonID) as value
@@ -58,6 +58,6 @@ namespace iMovie
         public const string CountMovieByFileLink =
         @"select count(*) as value
         from Movie
-        where Movie.FileLink=@FileLink";
+        where lower(Movie.FileLink)=lower(@FileLink)";
     }
 }
