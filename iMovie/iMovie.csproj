@@ -318,6 +318,12 @@
     <Compile Include="App_UI\frmGetURL.Designer.cs">
       <DependentUpon>frmGetURL.cs</DependentUpon>
     </Compile>
+    <Compile Include="App_UserControl\ucPersonList.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="App_UserControl\ucPersonList.Designer.cs">
+      <DependentUpon>ucPersonList.cs</DependentUpon>
+    </Compile>
     <Compile Include="App_UserControl\ucCheckBoxList.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -421,6 +427,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="App_UI\frmGetURL.resx">
       <DependentUpon>frmGetURL.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="App_UserControl\ucPersonList.resx">
+      <DependentUpon>ucPersonList.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="App_UserControl\ucCheckBoxList.resx">
       <DependentUpon>ucCheckBoxList.cs</DependentUpon>

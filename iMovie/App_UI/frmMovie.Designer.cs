@@ -36,6 +36,8 @@
             this.grpDetails = new System.Windows.Forms.GroupBox();
             this.lblFavValue = new System.Windows.Forms.Label();
             this.lblDirector = new System.Windows.Forms.Label();
+            this.mnuContextMenuDeleteDirectors = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.removeDirectorsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.lblDirectorValue = new System.Windows.Forms.Label();
             this.lblDuration = new System.Windows.Forms.Label();
             this.lblAddDate = new System.Windows.Forms.Label();
@@ -55,8 +57,7 @@
             this.lblStoryTitle = new System.Windows.Forms.Label();
             this.grpStory = new System.Windows.Forms.GroupBox();
             this.lblStoryText = new System.Windows.Forms.Label();
-            this.tabCast = new System.Windows.Forms.TabPage();
-            this.repActor = new iMovie.ucPersonRepeater();
+            this.tabDirector = new System.Windows.Forms.TabPage();
             this.repDirector = new iMovie.ucPersonRepeater();
             this.tabSimilar = new System.Windows.Forms.TabPage();
             this.repMovie = new iMovie.ucMovieRepeater();
@@ -64,20 +65,21 @@
             this.linkIMDB = new System.Windows.Forms.LinkLabel();
             this.linkFile = new System.Windows.Forms.LinkLabel();
             this.tooltip = new System.Windows.Forms.ToolTip(this.components);
-            this.mnuContextMenuDeleteDirectors = new System.Windows.Forms.ContextMenuStrip(this.components);
-            this.removeDirectorsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.tabCasts = new System.Windows.Forms.TabPage();
+            this.ucActorList = new iMovie.ucPersonList();
             this.tab.SuspendLayout();
             this.tabSummary.SuspendLayout();
             this.grpDetails.SuspendLayout();
+            this.mnuContextMenuDeleteDirectors.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.picQuality)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.picIsSeen)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.picPoster)).BeginInit();
             this.mnuContextExtra.SuspendLayout();
             this.tabStory.SuspendLayout();
             this.grpStory.SuspendLayout();
-            this.tabCast.SuspendLayout();
+            this.tabDirector.SuspendLayout();
             this.tabSimilar.SuspendLayout();
-            this.mnuContextMenuDeleteDirectors.SuspendLayout();
+            this.tabCasts.SuspendLayout();
             this.SuspendLayout();
             // 
             // tab
@@ -85,7 +87,8 @@
             this.tab.Appearance = System.Windows.Forms.TabAppearance.FlatButtons;
             this.tab.Controls.Add(this.tabSummary);
             this.tab.Controls.Add(this.tabStory);
-            this.tab.Controls.Add(this.tabCast);
+            this.tab.Controls.Add(this.tabDirector);
+            this.tab.Controls.Add(this.tabCasts);
             this.tab.Controls.Add(this.tabSimilar);
             this.tab.Dock = System.Windows.Forms.DockStyle.Top;
             this.tab.Location = new System.Drawing.Point(0, 24);
@@ -167,6 +170,21 @@
             this.lblDirector.TabIndex = 38;
             this.lblDirector.Text = "Director:";
             this.lblDirector.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // mnuContextMenuDeleteDirectors
+            // 
+            this.mnuContextMenuDeleteDirectors.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.removeDirectorsToolStripMenuItem});
+            this.mnuContextMenuDeleteDirectors.Name = "mnuContextMenuDeleteDirectors";
+            this.mnuContextMenuDeleteDirectors.ShowImageMargin = false;
+            this.mnuContextMenuDeleteDirectors.Size = new System.Drawing.Size(143, 26);
+            // 
+            // removeDirectorsToolStripMenuItem
+            // 
+            this.removeDirectorsToolStripMenuItem.Name = "removeDirectorsToolStripMenuItem";
+            this.removeDirectorsToolStripMenuItem.Size = new System.Drawing.Size(142, 22);
+            this.removeDirectorsToolStripMenuItem.Text = "Remove Directors";
+            this.removeDirectorsToolStripMenuItem.Click += new System.EventHandler(this.removeDirectorsToolStripMenuItem_Click);
             // 
             // lblDirectorValue
             // 
@@ -384,31 +402,21 @@
             this.lblStoryText.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.lblStoryText.UseMnemonic = false;
             // 
-            // tabCast
+            // tabDirector
             // 
-            this.tabCast.BackColor = System.Drawing.SystemColors.Control;
-            this.tabCast.Controls.Add(this.repActor);
-            this.tabCast.Controls.Add(this.repDirector);
-            this.tabCast.Location = new System.Drawing.Point(4, 25);
-            this.tabCast.Name = "tabCast";
-            this.tabCast.Padding = new System.Windows.Forms.Padding(3);
-            this.tabCast.Size = new System.Drawing.Size(670, 402);
-            this.tabCast.TabIndex = 1;
-            this.tabCast.Text = "Cast & Crew";
-            // 
-            // repActor
-            // 
-            this.repActor.DataSource = new iMovie.Person[0];
-            this.repActor.Location = new System.Drawing.Point(24, 200);
-            this.repActor.MaximumSize = new System.Drawing.Size(619, 196);
-            this.repActor.Name = "repActor";
-            this.repActor.Size = new System.Drawing.Size(619, 196);
-            this.repActor.TabIndex = 7;
+            this.tabDirector.BackColor = System.Drawing.SystemColors.Control;
+            this.tabDirector.Controls.Add(this.repDirector);
+            this.tabDirector.Location = new System.Drawing.Point(4, 25);
+            this.tabDirector.Name = "tabDirector";
+            this.tabDirector.Padding = new System.Windows.Forms.Padding(3);
+            this.tabDirector.Size = new System.Drawing.Size(670, 402);
+            this.tabDirector.TabIndex = 1;
+            this.tabDirector.Text = "Directed By";
             // 
             // repDirector
             // 
             this.repDirector.DataSource = new iMovie.Person[0];
-            this.repDirector.Location = new System.Drawing.Point(24, 4);
+            this.repDirector.Location = new System.Drawing.Point(24, 23);
             this.repDirector.MaximumSize = new System.Drawing.Size(619, 196);
             this.repDirector.Name = "repDirector";
             this.repDirector.Size = new System.Drawing.Size(619, 196);
@@ -477,20 +485,24 @@
             this.linkFile.VisitedLinkColor = System.Drawing.Color.Blue;
             this.linkFile.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.linkFile_LinkClicked);
             // 
-            // mnuContextMenuDeleteDirectors
+            // tabCasts
             // 
-            this.mnuContextMenuDeleteDirectors.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.removeDirectorsToolStripMenuItem});
-            this.mnuContextMenuDeleteDirectors.Name = "mnuContextMenuDeleteDirectors";
-            this.mnuContextMenuDeleteDirectors.ShowImageMargin = false;
-            this.mnuContextMenuDeleteDirectors.Size = new System.Drawing.Size(143, 26);
+            this.tabCasts.Controls.Add(this.ucActorList);
+            this.tabCasts.Location = new System.Drawing.Point(4, 25);
+            this.tabCasts.Name = "tabCasts";
+            this.tabCasts.Padding = new System.Windows.Forms.Padding(3);
+            this.tabCasts.Size = new System.Drawing.Size(670, 402);
+            this.tabCasts.TabIndex = 5;
+            this.tabCasts.Text = "Casts";
+            this.tabCasts.UseVisualStyleBackColor = true;
             // 
-            // removeDirectorsToolStripMenuItem
+            // ucActorList
             // 
-            this.removeDirectorsToolStripMenuItem.Name = "removeDirectorsToolStripMenuItem";
-            this.removeDirectorsToolStripMenuItem.Size = new System.Drawing.Size(142, 22);
-            this.removeDirectorsToolStripMenuItem.Text = "Remove Directors";
-            this.removeDirectorsToolStripMenuItem.Click += new System.EventHandler(this.removeDirectorsToolStripMenuItem_Click);
+            this.ucActorList.Location = new System.Drawing.Point(136, 16);
+            this.ucActorList.Name = "ucActorList";
+            this.ucActorList.PersonType = "";
+            this.ucActorList.Size = new System.Drawing.Size(379, 368);
+            this.ucActorList.TabIndex = 0;
             // 
             // frmMovie
             // 
@@ -509,6 +521,7 @@
             this.tab.ResumeLayout(false);
             this.tabSummary.ResumeLayout(false);
             this.grpDetails.ResumeLayout(false);
+            this.mnuContextMenuDeleteDirectors.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.picQuality)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.picIsSeen)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.picPoster)).EndInit();
@@ -516,10 +529,10 @@
             this.tabStory.ResumeLayout(false);
             this.tabStory.PerformLayout();
             this.grpStory.ResumeLayout(false);
-            this.tabCast.ResumeLayout(false);
+            this.tabDirector.ResumeLayout(false);
             this.tabSimilar.ResumeLayout(false);
             this.tabSimilar.PerformLayout();
-            this.mnuContextMenuDeleteDirectors.ResumeLayout(false);
+            this.tabCasts.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -544,7 +557,7 @@
         private System.Windows.Forms.Label lblMovieName;
         private System.Windows.Forms.PictureBox picPoster;
         private System.Windows.Forms.Label lblRateValue;
-        private System.Windows.Forms.TabPage tabCast;
+        private System.Windows.Forms.TabPage tabDirector;
         private System.Windows.Forms.LinkLabel linkIMDB;
         private System.Windows.Forms.LinkLabel linkFile;
         private System.Windows.Forms.TabPage tabSimilar;
@@ -553,7 +566,6 @@
         private System.Windows.Forms.ToolTip tooltip;
         private System.Windows.Forms.Label lblFavValue;
         private ucMovieRepeater repMovie;
-        private ucPersonRepeater repActor;
         private ucPersonRepeater repDirector;
         private System.Windows.Forms.TabPage tabStory;
         private System.Windows.Forms.GroupBox grpStory;
@@ -563,6 +575,7 @@
         private System.Windows.Forms.ToolStripMenuItem requestCopyToolStripMenuItem;
         private System.Windows.Forms.ContextMenuStrip mnuContextMenuDeleteDirectors;
         private System.Windows.Forms.ToolStripMenuItem removeDirectorsToolStripMenuItem;
-
+        private System.Windows.Forms.TabPage tabCasts;
+        private ucPersonList ucActorList;
     }
 }

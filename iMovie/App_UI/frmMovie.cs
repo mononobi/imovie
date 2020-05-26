@@ -17,7 +17,7 @@ namespace iMovie
    
         private Movie movie = new Movie();
         private Person[] director = new Person[0];
-        private Person[] actor = new Person[0];
+        private DataTable actor = new DataTable();
         private Language[] language = new Language[0];
         private Genre[] genre = new Genre[0];
         private Movie[] similar = new Movie[0];
@@ -293,7 +293,7 @@ namespace iMovie
 
                 this.movie.FetchSingleMovie(dsMovie.Tables[0]);
                 this.director = Person.FetchAllPerson(dsMovie.Tables[1]);
-                this.actor = Person.FetchAllPerson(dsMovie.Tables[2]);
+                this.actor = dsMovie.Tables[2];
                 this.language = Language.FetchAllLanguage(dsMovie.Tables[3]);
                 this.genre = Genre.FetchAllGenre(dsMovie.Tables[4]);
                 this.similar = Movie.FetchAllMovie(dtSimilar);
@@ -437,7 +437,8 @@ namespace iMovie
                 // Cast & Crew
 
                 repDirector.DataSource = this.director;
-                repActor.DataSource = this.actor;
+                this.ucActorList.DtPersons = this.actor;
+                this.ucActorList.PersonType = "Actor";
 
                 // Similar Movies
 
