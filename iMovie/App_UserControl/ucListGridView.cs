@@ -1500,6 +1500,9 @@ namespace iMovie
 
                                     if (dt.Rows.Count > 0)
                                     {
+                                        string logName = "iMovie Update Log [" + Helper.GetShortDateTimeString().Replace(":", "-") + "].txt";
+                                        iMovieBase.log.Path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), logName);
+
                                         Thread SecondThread = new Thread(
                                         new ThreadStart(() =>
                                         {
@@ -1520,7 +1523,7 @@ namespace iMovie
 
                                                     enUpdateResult res = enUpdateResult.UpdateError;
                                                     res = Movie_SP.UpdateOnline(m, true, true, true, true, true, true, true,
-                                                        true, true, true, true, true, false, false, false, null);
+                                                        true, true, true, true, true, false, true, true, null);
 
                                                     if (res == enUpdateResult.Updated)
                                                     {
@@ -1769,6 +1772,9 @@ namespace iMovie
 
                                 if (dt.Rows.Count > 0)
                                 {
+                                    string logName = "iMovie Update Log [" + Helper.GetShortDateTimeString().Replace(":", "-") + "].txt";
+                                    iMovieBase.log.Path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), logName);
+
                                     Thread SecondThread = new Thread(
                                     new ThreadStart(() =>
                                     {
@@ -1789,7 +1795,7 @@ namespace iMovie
 
                                                 enUpdateResult res = enUpdateResult.UpdateError;
                                                 res = Movie_SP.UpdateOnline(m, true, true, true, true, true, true,
-                                                    true, true, true, true, true, true, true, false, false, null);
+                                                    true, true, true, true, true, true, true, true, false, null);
 
                                                 if (res == enUpdateResult.Updated)
                                                 {
@@ -1898,6 +1904,9 @@ namespace iMovie
 
                                             }
 
+                                            string logName = "iMovie Update Log [" + Helper.GetShortDateTimeString().Replace(":", "-") + "].txt";
+                                            iMovieBase.log.Path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), logName);
+
                                             Thread SecondThread = new Thread(
                                             new ThreadStart(() =>
                                             {
@@ -1915,7 +1924,7 @@ namespace iMovie
                                                     {
                                                         enUpdateResult res = enUpdateResult.UpdateError;
                                                         res = Movie_SP.UpdateOnlineFromIMDb(url.url, m, true, true, true, true, true,
-                                                            true, true, true, true, true, true, false, false, null);
+                                                            true, true, true, true, true, true, false, true, null);
 
                                                         if (res == enUpdateResult.Updated)
                                                         {

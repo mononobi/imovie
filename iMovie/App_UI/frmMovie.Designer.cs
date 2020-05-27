@@ -59,14 +59,14 @@
             this.lblStoryText = new System.Windows.Forms.Label();
             this.tabDirector = new System.Windows.Forms.TabPage();
             this.repDirector = new iMovie.ucPersonRepeater();
+            this.tabCasts = new System.Windows.Forms.TabPage();
+            this.ucActorList = new iMovie.ucPersonList();
             this.tabSimilar = new System.Windows.Forms.TabPage();
             this.repMovie = new iMovie.ucMovieRepeater();
             this.lblSimilar = new System.Windows.Forms.Label();
             this.linkIMDB = new System.Windows.Forms.LinkLabel();
             this.linkFile = new System.Windows.Forms.LinkLabel();
             this.tooltip = new System.Windows.Forms.ToolTip(this.components);
-            this.tabCasts = new System.Windows.Forms.TabPage();
-            this.ucActorList = new iMovie.ucPersonList();
             this.tab.SuspendLayout();
             this.tabSummary.SuspendLayout();
             this.grpDetails.SuspendLayout();
@@ -78,8 +78,8 @@
             this.tabStory.SuspendLayout();
             this.grpStory.SuspendLayout();
             this.tabDirector.SuspendLayout();
-            this.tabSimilar.SuspendLayout();
             this.tabCasts.SuspendLayout();
+            this.tabSimilar.SuspendLayout();
             this.SuspendLayout();
             // 
             // tab
@@ -422,6 +422,25 @@
             this.repDirector.Size = new System.Drawing.Size(619, 196);
             this.repDirector.TabIndex = 6;
             // 
+            // tabCasts
+            // 
+            this.tabCasts.Controls.Add(this.ucActorList);
+            this.tabCasts.Location = new System.Drawing.Point(4, 25);
+            this.tabCasts.Name = "tabCasts";
+            this.tabCasts.Padding = new System.Windows.Forms.Padding(3);
+            this.tabCasts.Size = new System.Drawing.Size(670, 402);
+            this.tabCasts.TabIndex = 5;
+            this.tabCasts.Text = "Cast";
+            this.tabCasts.UseVisualStyleBackColor = true;
+            // 
+            // ucActorList
+            // 
+            this.ucActorList.Location = new System.Drawing.Point(136, 16);
+            this.ucActorList.Name = "ucActorList";
+            this.ucActorList.PersonType = "";
+            this.ucActorList.Size = new System.Drawing.Size(379, 368);
+            this.ucActorList.TabIndex = 0;
+            // 
             // tabSimilar
             // 
             this.tabSimilar.BackColor = System.Drawing.SystemColors.Control;
@@ -485,25 +504,6 @@
             this.linkFile.VisitedLinkColor = System.Drawing.Color.Blue;
             this.linkFile.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.linkFile_LinkClicked);
             // 
-            // tabCasts
-            // 
-            this.tabCasts.Controls.Add(this.ucActorList);
-            this.tabCasts.Location = new System.Drawing.Point(4, 25);
-            this.tabCasts.Name = "tabCasts";
-            this.tabCasts.Padding = new System.Windows.Forms.Padding(3);
-            this.tabCasts.Size = new System.Drawing.Size(670, 402);
-            this.tabCasts.TabIndex = 5;
-            this.tabCasts.Text = "Casts";
-            this.tabCasts.UseVisualStyleBackColor = true;
-            // 
-            // ucActorList
-            // 
-            this.ucActorList.Location = new System.Drawing.Point(136, 16);
-            this.ucActorList.Name = "ucActorList";
-            this.ucActorList.PersonType = "";
-            this.ucActorList.Size = new System.Drawing.Size(379, 368);
-            this.ucActorList.TabIndex = 0;
-            // 
             // frmMovie
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -530,9 +530,9 @@
             this.tabStory.PerformLayout();
             this.grpStory.ResumeLayout(false);
             this.tabDirector.ResumeLayout(false);
+            this.tabCasts.ResumeLayout(false);
             this.tabSimilar.ResumeLayout(false);
             this.tabSimilar.PerformLayout();
-            this.tabCasts.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 

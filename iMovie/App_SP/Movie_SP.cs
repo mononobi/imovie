@@ -1451,10 +1451,9 @@ namespace iMovie
                 if (!image && !rate && !link && !year && !duration && !story && !genre &&
                     !director && !directorImage && !language && !actor && !actorImage)
                 {
-                    return enUpdateResult.NoNeedUpdate;
+                    return result;
                 }
 
-                
                 string url = Movie_SP.GetMovieIMDbPage(movie, forceUpdateURL);
                 if (string.IsNullOrEmpty(url))
                 {
@@ -1504,6 +1503,8 @@ namespace iMovie
                             {
                                 iMovieBase.log.GenerateSilent("Could not get movie IMDb rate." + Environment.NewLine + movie.FullTitle);
                             }
+
+                            result = enUpdateResult.UpdateError;
                         }
                     }
                 }
@@ -1534,6 +1535,8 @@ namespace iMovie
                             {
                                 iMovieBase.log.GenerateSilent("Could not get movie release year." + Environment.NewLine + movie.FullTitle);
                             }
+
+                            result = enUpdateResult.UpdateError;
                         }
                     }
                 }
@@ -1564,6 +1567,8 @@ namespace iMovie
                             {
                                 iMovieBase.log.GenerateSilent("Could not get movie duration." + Environment.NewLine + movie.FullTitle);
                             }
+
+                            result = enUpdateResult.UpdateError;
                         }
                     }
                 }
@@ -1594,6 +1599,8 @@ namespace iMovie
                             {
                                 iMovieBase.log.GenerateSilent("Could not get movie story line." + Environment.NewLine + movie.FullTitle);
                             }
+
+                            result = enUpdateResult.UpdateError;
                         }
                     }
                 }
@@ -1652,6 +1659,8 @@ namespace iMovie
                             {
                                 iMovieBase.log.GenerateSilent("Could not get movie poster image." + Environment.NewLine + movie.FullTitle);
                             }
+
+                            result = enUpdateResult.UpdateError;
                         }
                     }
                 }
@@ -1680,6 +1689,8 @@ namespace iMovie
                             {
                                 iMovieBase.log.GenerateSilent("Could not get movie genres." + Environment.NewLine + movie.FullTitle);
                             }
+
+                            result = enUpdateResult.UpdateError;
                         }
                     }
                 }
@@ -1708,6 +1719,8 @@ namespace iMovie
                             {
                                 iMovieBase.log.GenerateSilent("Could not get movie languages." + Environment.NewLine + movie.FullTitle);
                             }
+
+                            result = enUpdateResult.UpdateError;
                         }
                     }
                 }
@@ -1736,6 +1749,8 @@ namespace iMovie
                             {
                                 iMovieBase.log.GenerateSilent("Could not get movie directors." + Environment.NewLine + movie.FullTitle);
                             }
+
+                            result = enUpdateResult.UpdateError;
                         }
                     }
                 }
@@ -1764,6 +1779,8 @@ namespace iMovie
                             {
                                 iMovieBase.log.GenerateSilent("Could not get movie actors." + Environment.NewLine + movie.FullTitle);
                             }
+
+                            result = enUpdateResult.UpdateError;
                         }
                     }
                 }
@@ -1814,11 +1831,11 @@ namespace iMovie
                                     string imagePath = string.Format("{0}{1}", Movie_SP.PersonPhotoPath,
                                         dr["PhotoLink"]?.ToString() ?? string.Empty);
 
-                                    if (string.IsNullOrEmpty(dr["PhotoLink"]?.ToString()) || 
+                                    if (string.IsNullOrEmpty(dr["PhotoLink"]?.ToString()) ||
                                         File.Exists(imagePath) == false || ignoreValid == false)
                                     {
                                         if (!string.IsNullOrEmpty(dr["IMDBLink"]?.ToString()) &&
-                                            (File.Exists(Movie_SP.PersonPhotoPath + dr["FullName"].ToString() + ".jpg") == false || 
+                                            (File.Exists(Movie_SP.PersonPhotoPath + dr["FullName"].ToString() + ".jpg") == false ||
                                             ignoreValid == false))
                                         {
                                             IMDbPerson directorPage = new IMDbPerson(dr["IMDBLink"].ToString());
@@ -1857,15 +1874,16 @@ namespace iMovie
                                         }
                                     }
                                 }
-                                catch(Exception ex)
+                                catch (Exception ex)
                                 {
                                     if (generateLog == true)
                                     {
-                                        iMovieBase.log.GenerateSilent("Could not get director photo." + 
-                                            Environment.NewLine + dr["FullName"].ToString() + 
+                                        iMovieBase.log.GenerateSilent("Could not get director photo." +
+                                            Environment.NewLine + dr["FullName"].ToString() +
                                             Environment.NewLine + movie.FullTitle);
                                     }
 
+                                    result = enUpdateResult.UpdateError;
                                     continue;
                                 }
                             }
@@ -1921,6 +1939,7 @@ namespace iMovie
                                             Environment.NewLine + movie.FullTitle);
                                     }
 
+                                    result = enUpdateResult.UpdateError;
                                     continue;
                                 }
                             }
@@ -2026,6 +2045,7 @@ namespace iMovie
                                             Environment.NewLine + movie.FullTitle);
                                     }
 
+                                    result = enUpdateResult.UpdateError;
                                     continue;
                                 }
                             }
@@ -2080,6 +2100,7 @@ namespace iMovie
                                             Environment.NewLine + movie.FullTitle);
                                     }
 
+                                    result = enUpdateResult.UpdateError;
                                     continue;
                                 }
                             }
@@ -2122,6 +2143,7 @@ namespace iMovie
                                             Environment.NewLine + item.GenreName + Environment.NewLine + movie.FullTitle);
                                     }
 
+                                    result = enUpdateResult.UpdateError;
                                     continue;
                                 }
                             }
@@ -2132,6 +2154,8 @@ namespace iMovie
                             {
                                 iMovieBase.log.GenerateSilent("Could not save updated movie genres." + Environment.NewLine + movie.FullTitle);
                             }
+
+                            result = enUpdateResult.UpdateError;
                         }
                     }
 
@@ -2166,6 +2190,7 @@ namespace iMovie
                                             Environment.NewLine + item.LanguageName + Environment.NewLine + movie.FullTitle);
                                     }
 
+                                    result = enUpdateResult.UpdateError;
                                     continue;
                                 }
                             }
@@ -2176,6 +2201,8 @@ namespace iMovie
                             {
                                 iMovieBase.log.GenerateSilent("Could not save updated movie languages." + Environment.NewLine + movie.FullTitle);
                             }
+
+                            result = enUpdateResult.UpdateError;
                         }
                     }
 
@@ -2219,6 +2246,7 @@ namespace iMovie
                                             Environment.NewLine + item.FullName + Environment.NewLine + movie.FullTitle);
                                     }
 
+                                    result = enUpdateResult.UpdateError;
                                     continue;
                                 }
                             }
@@ -2229,6 +2257,8 @@ namespace iMovie
                             {
                                 iMovieBase.log.GenerateSilent("Could not save updated movie directors." + Environment.NewLine + movie.FullTitle);
                             }
+
+                            result = enUpdateResult.UpdateError;
                         }
                     }
 
@@ -2271,6 +2301,7 @@ namespace iMovie
                                             Environment.NewLine + item.FullName + Environment.NewLine + movie.FullTitle);
                                     }
 
+                                    result = enUpdateResult.UpdateError;
                                     continue;
                                 }
                             }
@@ -2281,6 +2312,8 @@ namespace iMovie
                             {
                                 iMovieBase.log.GenerateSilent("Could not save updated movie actors." + Environment.NewLine + movie.FullTitle);
                             }
+
+                            result = enUpdateResult.UpdateError;
                         }
                     }
 
@@ -2300,8 +2333,9 @@ namespace iMovie
                         }
                     }
 
-                    if (imdbPage.HasDuration == true || imdbPage.HasURL == true || imdbPage.HasYear == true ||
-                        imdbPage.HasRate == true || imdbPage.HasPhotoURL == true || imdbPage.HasStoryLine == true)
+                    if (imdbPage.HasDuration == true || imdbPage.HasYear == true ||
+                        imdbPage.HasRate == true || imdbPage.HasPhotoURL == true || 
+                        imdbPage.HasStoryLine == true)
                     {
                         long res = 0;
                         res = Movie_SP.UpdateOnline(movie);
@@ -2316,6 +2350,21 @@ namespace iMovie
                         updatedActorsImage.Count > 0 || updatedDirectorsImage.Count > 0)
                     {
                         result = enUpdateResult.Updated;
+                    }
+                    
+                    if (imdbPage.HasURL == true)
+                    {
+                        long res = 0;
+                        res = Movie_SP.UpdateOnline(movie);
+
+                        if (res > 0 && link == true && result == enUpdateResult.NoNeedUpdate)
+                        {
+                            result = enUpdateResult.Updated;
+                        }
+                        else if (res <= 0 && link == true && result == enUpdateResult.NoNeedUpdate)
+                        {
+                            result = enUpdateResult.UpdateError;
+                        }
                     }
                 }
                 catch (Exception ex)
@@ -2333,18 +2382,7 @@ namespace iMovie
                     (owner as frmOnlineMovieUpdate).InvokeHandle();
                 }
 
-                if ((imdbPage.HasDuration == true || imdbPage.HasPhotoURL == true || imdbPage.HasURL == true || 
-                    imdbPage.HasGenres == true || imdbCredits.HasDirectors == true || imdbPage.HasLanguages == true ||
-                    imdbCredits.HasActors == true || imdbPage.HasRate == true || imdbPage.HasYear == true || 
-                    imdbPage.HasStoryLine == true || updatedActorsImage.Count > 0 || updatedDirectorsImage.Count > 0) && 
-                    result != enUpdateResult.Updated)
-                {
-                    return enUpdateResult.UpdateError;
-                }
-                else
-                {
-                    return result;
-                }
+                return result;
             }
             catch(CouldNotLoadWebPageException ex)
             {

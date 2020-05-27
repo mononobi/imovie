@@ -9,13 +9,13 @@ namespace iMovie
     {
         public const int PersonID_Min_Value = 1;
         public const int PersonFName_Min_Length = 1;
-        public const int PersonFName_Max_Length = 25;
+        public const int PersonFName_Max_Length = 50;
         public const int PersonLName_Min_Length = 0;
-        public const int PersonLName_Max_Length = 25;
+        public const int PersonLName_Max_Length = 50;
         public const int IMDBLink_Min_Length = 0;
-        public const int IMDBLink_Max_Length = 125; 
+        public const int IMDBLink_Max_Length = 250; 
         public const int PhotoLink_Min_Length = 0; 
-        public const int PhotoLink_Max_Length = 125;
+        public const int PhotoLink_Max_Length = 250;
          
         private long personID = 0;
         private string personFName = ""; 

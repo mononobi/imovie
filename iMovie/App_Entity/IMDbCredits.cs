@@ -42,19 +42,26 @@ namespace iMovie
                             this.Directors.Clear();
                             foreach (HtmlNode directorItem in directorNodes)
                             {
-                                string name = directorItem.InnerText.Trim();
-                                if (!string.IsNullOrEmpty(name))
+                                try
                                 {
-                                    string url = directorItem.Attributes["href"].Value.Trim().TrimStart('/');
-                                    url = url.Split('?')[0].TrimEnd('/');
-                                    string fullURL = string.Empty;
-                                    if (!string.IsNullOrEmpty(url))
+                                    string name = directorItem.InnerText.Trim();
+                                    if (!string.IsNullOrEmpty(name))
                                     {
-                                        fullURL = IMDb.IMDbBaseURL + "/" + url;
-                                    }
+                                        string url = directorItem.Attributes["href"].Value.Trim().TrimStart('/');
+                                        url = url.Split('?')[0].TrimEnd('/');
+                                        string fullURL = string.Empty;
+                                        if (!string.IsNullOrEmpty(url))
+                                        {
+                                            fullURL = IMDb.IMDbBaseURL + "/" + url;
+                                        }
 
-                                    Person director = new Person(0, name, fullURL, string.Empty);
-                                    this.Directors.Add(director);
+                                        Person director = new Person(0, name, fullURL, string.Empty);
+                                        this.Directors.Add(director);
+                                    }
+                                }
+                                catch (Exception ex)
+                                {
+                                    continue;
                                 }
                             }
                         }
@@ -74,19 +81,26 @@ namespace iMovie
                 this.Actors.Clear();
                 foreach (HtmlNode actorItem in actorsList)
                 {
-                    string name = actorItem.Attributes["title"].Value.Trim();
-                    if (!string.IsNullOrEmpty(name))
+                    try
                     {
-                        string url = actorItem.ParentNode.Attributes["href"].Value.Trim().TrimStart('/');
-                        url = url.Split('?')[0].TrimEnd('/');
-                        string fullURL = string.Empty;
-                        if (!string.IsNullOrEmpty(url))
+                        string name = actorItem.Attributes["title"].Value.Trim();
+                        if (!string.IsNullOrEmpty(name))
                         {
-                            fullURL = IMDb.IMDbBaseURL + "/" + url;
-                        }
+                            string url = actorItem.ParentNode.Attributes["href"].Value.Trim().TrimStart('/');
+                            url = url.Split('?')[0].TrimEnd('/');
+                            string fullURL = string.Empty;
+                            if (!string.IsNullOrEmpty(url))
+                            {
+                                fullURL = IMDb.IMDbBaseURL + "/" + url;
+                            }
 
-                        Person actor = new Person(0, name, fullURL, string.Empty);
-                        this.Actors.Add(actor);
+                            Person actor = new Person(0, name, fullURL, string.Empty);
+                            this.Actors.Add(actor);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        continue;
                     }
                 }
             }

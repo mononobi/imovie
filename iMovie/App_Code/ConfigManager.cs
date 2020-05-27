@@ -12,11 +12,15 @@ namespace iMovie
         /// <summary>
         /// Characters that if a folder name starts with them, will be ignored.
         /// </summary>
-        private static string[] ignoreChars = { "@", "+", "'"};
+        private static readonly string[] ignoreChars = { "@" };
         /// <summary>
         /// Characters that will be removed from movie name
         /// </summary>
-        private static string[] extraChars = { "fullhd", "bdrip", "ac3", "aac", "h264", "dvdscr", "brip", "dvdrip", "hdrip", "brrip", "x264", "hdtvrip", "xvid", "divx", "720p", "1080p", "bluray", "480p", "360p", "directors cut", "director cut", "extended cut", "yify", "isohunt", "maxspeed", "kickasstorrents", "extratorrent", "extended", "theatrical cut", "unrated cut", "unrated", "hdtv", "m-hd" };
+        private static readonly string[] extraChars = { "fullhd", "bdrip", "ac3", "aac", "h264", "dvdscr", 
+            "brip", "dvdrip", "hdrip", "brrip", "x264", "hdtvrip", "xvid", "divx", "720p", "1080p", 
+            "bluray", "480p", "360p", "directors cut", "director cut", "extended cut", "yify", "isohunt",
+            "maxspeed", "kickasstorrents", "extratorrent", "extended", "theatrical cut", "unrated cut", 
+            "unrated", "hdtv", "m-hd", "theatrical edition", "theatrical-edition" };
 
         public static string[] GetExtraCharacters()
         {

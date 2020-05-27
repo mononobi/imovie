@@ -110,11 +110,18 @@ namespace iMovie
                             this.Languages.Clear();
                             foreach (HtmlNode languageItem in languageNodes)
                             {
-                                string value = languageItem.InnerText.Trim();
-                                if (!string.IsNullOrEmpty(value))
+                                try
                                 {
-                                    Language language = new Language(0, value);
-                                    this.Languages.Add(language);
+                                    string value = languageItem.InnerText.Trim();
+                                    if (!string.IsNullOrEmpty(value))
+                                    {
+                                        Language language = new Language(0, value);
+                                        this.Languages.Add(language);
+                                    }
+                                }
+                                catch (Exception ex)
+                                {
+                                    continue;
                                 }
                             }
 
@@ -141,11 +148,18 @@ namespace iMovie
                             this.Genres.Clear();
                             foreach (HtmlNode genreItem in genreNodes)
                             {
-                                string value = genreItem.InnerText.Trim();
-                                if (!string.IsNullOrEmpty(value))
+                                try
                                 {
-                                    Genre genre = new Genre(0, value);
-                                    this.Genres.Add(genre);
+                                    string value = genreItem.InnerText.Trim();
+                                    if (!string.IsNullOrEmpty(value))
+                                    {
+                                        Genre genre = new Genre(0, value);
+                                        this.Genres.Add(genre);
+                                    }
+                                }
+                                catch (Exception ex)
+                                {
+                                    continue;
                                 }
                             }
 

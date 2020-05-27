@@ -26,8 +26,8 @@ namespace iMovie
         public const string IMDBLinkNotExist = "IMDb page link not supplied."; 
         public const string IsSeen = "This movie has been watched already";
         public const string NotSeen = "This movie has not been watched yet";
-        public const string NoMovieFound = "Not found any movie.";
-        public const string NoDuplicateMovieFound = "Not found any duplicate movies.";
+        public const string NoMovieFound = "No movies found.";
+        public const string NoDuplicateMovieFound = "There is not any duplicate movies.";
         public const string DeleteCache = "Are you sure you want to clear suggestion cache?";
         public const string InvalidFavoriteRate = "Invalid Favorite Rate.";
         public const string FavoriteListEmpty = "Favorite list is empty.";
