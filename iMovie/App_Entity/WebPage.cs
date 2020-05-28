@@ -68,21 +68,25 @@ namespace iMovie
                     throw new Exception(Messages.InvalidPageURL);
                 }
 
-                Regex reg1 = new Regex(@"^www.*");
-                Regex reg2 = new Regex(@"^http://.*");
-                Regex reg3 = new Regex(@"^https://.*");
+                Regex www = new Regex(@"^www.*");
+                Regex http = new Regex(@"^http://.*");
+                Regex https = new Regex(@"^https://.*");
 
-                if (reg2.IsMatch(value) == true || reg3.IsMatch(value) == true)
+                if (https.IsMatch(value) == true)
                 {
                     // OK
                 }
-                else if (reg1.IsMatch(value) == true)
+                else if (www.IsMatch(value) == true)
                 {
-                    value = @"http://" + value;
+                    value = @"https://" + value;
+                }
+                else if (http.IsMatch(value) == true)
+                {
+                    value = value.Replace("http:", "https:");
                 }
                 else
                 {
-                    value = @"http://" + value;
+                    value = @"https://www." + value;
                 }
 
                 this.url = value;

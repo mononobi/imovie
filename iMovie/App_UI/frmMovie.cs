@@ -536,6 +536,9 @@ namespace iMovie
 
                     masterToolTip.RemoveAll();
                 }
+
+                this.ucActorList.EnableRightClick = false;
+                this.ucActorList.ValidateAccess();
             }
             catch (Exception ex)
             {

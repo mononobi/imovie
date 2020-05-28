@@ -75,8 +75,11 @@ namespace iMovie
 
         public void ValidateAccess()
         {
-            dgvPerson.EnableRightClick = iMovieBase.IsLogin;
+            dgvPerson.EnableRightClick = iMovieBase.IsLogin && this.EnableRightClick;
+            dgvPerson.IsDeletable = iMovieBase.IsLogin && this.EnableRightClick;
         }
+
+        public bool EnableRightClick { get; set; } = true;
 
         private void Initialize()
         {

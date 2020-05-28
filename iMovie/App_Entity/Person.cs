@@ -481,13 +481,6 @@ namespace iMovie
                 while (i < dtPerson.Rows.Count)
                 {
                     personTemp[i] = new Person();
-                    i++;
-                }
-
-                i = 0;
-
-                while (i < dtPerson.Rows.Count)
-                {
                     personTemp[i].PersonID = Convert.ToInt64(dtPerson.Rows[i]["PersonID"].ToString());
                     personTemp[i].PersonFName = dtPerson.Rows[i]["PersonFName"].ToString();
                     personTemp[i].PersonLName = dtPerson.Rows[i]["PersonLName"].ToString();
