@@ -1,5 +1,5 @@
 /*
-This files contains different queries that help you identify any bad data generated in application database.
+This file contains different queries that help you identify any bad data generated in application database.
 */
 
 --not https movies
