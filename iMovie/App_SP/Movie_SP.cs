@@ -1626,27 +1626,34 @@ namespace iMovie
 
                         try
                         {
-                            imdbPage.LoadPhotoLink();
-                            if (imdbPage.HasPhotoURL)
+                            if (File.Exists(imageLink) == false || ignoreValid == false)
                             {
-                                string realName = movie.FullTitle + Path.GetExtension(imdbPage.PhotoURL);
-                                string realImageLink = Movie_SP.MoviePosterPath + realName;
-                                string realTemp = PathUtils.GetApplicationTempPath() + realName;
-
-                                IMDb.DownloadFile(imdbPage.PhotoURL, realTemp);
-                                InsertManager im = new InsertManager(generateLog, false);
-                                realImageLink = im.RenameFile(realTemp, realImageLink);
-
-                                if (File.Exists(realImageLink) == true)
+                                imdbPage.LoadPhotoLink();
+                                if (imdbPage.HasPhotoURL)
                                 {
-                                    movie.PosterLink = Path.GetFileName(realImageLink);
-                                }
+                                    string realName = movie.FullTitle + Path.GetExtension(imdbPage.PhotoURL);
+                                    string realImageLink = Movie_SP.MoviePosterPath + realName;
+                                    string realTemp = PathUtils.GetApplicationTempPath() + realName;
 
-                                File.Delete(realTemp);
+                                    IMDb.DownloadFile(imdbPage.PhotoURL, realTemp);
+                                    InsertManager im = new InsertManager(generateLog, false);
+                                    realImageLink = im.RenameFile(realTemp, realImageLink);
+
+                                    if (File.Exists(realImageLink) == true)
+                                    {
+                                        movie.PosterLink = Path.GetFileName(realImageLink);
+                                    }
+
+                                    File.Delete(realTemp);
+                                }
+                                else
+                                {
+                                    throw new Exception();
+                                }
                             }
-                            else
+                            else if (File.Exists(imageLink) == true)
                             {
-                                throw new Exception();
+                                movie.PosterLink = Path.GetFileName(imageLink);
                             }
                         }
                         catch (CouldNotLoadWebPageException ex)
