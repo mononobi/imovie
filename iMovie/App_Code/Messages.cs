@@ -81,6 +81,8 @@ namespace iMovie
         public const string NoQuery = "Please write your query.";
         public const string ErrorOnIndividualFile = "An error occured while processing this file: ";
 
+        public const string InvalidArchiveDateRange = "Please select a correct archive date range.";
+
         // Titles 
 
         public const string MessageBoxTitle = "iMovie";
@@ -142,5 +144,6 @@ namespace iMovie
         public const string SubKeyLastSQLReport = @"LastSQLReport";
         public const string SubKeyLastDuplicateReportDateTime = @"LastDuplicateReportDateTime";
         public const string SubKeyLastCachedDuplicateAproximate = @"LastCachedDuplicateAproximate";
+        public const string SubKeyLastToArchiveDateTime = @"LastToArchiveDateTime";
     } 
 }

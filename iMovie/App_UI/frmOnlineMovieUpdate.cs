@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data;
-using System.Drawing;
-using System.Text;
 using System.Windows.Forms;
 using System.IO;
 using System.Threading;
@@ -21,6 +17,32 @@ namespace iMovie
         public frmOnlineMovieUpdate()
         {
             InitializeComponent();
+            this.Load += this.FrmOnlineMovieUpdate_Load;
+        }
+
+        private void FrmOnlineMovieUpdate_Load(object sender, EventArgs e)
+        {   
+            string lastToArchiveDate = RegistryManager.GetValue(Messages.RootKey, Messages.SubKeyLastToArchiveDateTime);
+            DateTime lastToDate = DateTime.MinValue;
+            if (!string.IsNullOrEmpty(lastToArchiveDate))
+            {
+                DateTime.TryParse(lastToArchiveDate, out lastToDate);
+            }
+
+            if (lastToDate > DateTime.MinValue)
+            {
+                this.datePickTo.Value = lastToDate;
+                this.datePickTo.Checked = true;
+                this.datePickFrom.Value = lastToDate.AddYears(-10);
+            }
+            else
+            {
+                this.datePickTo.Value = DateTime.Now;
+                this.datePickTo.Checked = false;
+                this.datePickFrom.Value = DateTime.Now.AddYears(-10);
+            }
+
+            this.datePickFrom.Checked = false;
         }
 
         private void btnUpdate_Click(object sender, EventArgs e)
@@ -51,6 +73,18 @@ namespace iMovie
                         bool actorPhoto = chkActorPhoto.Checked;
                         bool language = chkLanguage.Checked;
 
+                        DateTime? fromDate = null;
+                        DateTime? toDate = null;
+                        if (this.datePickFrom.Checked)
+                        {
+                            fromDate = this.datePickFrom.Value;
+                        }
+
+                        if (this.datePickTo.Checked)
+                        {
+                            toDate = this.datePickTo.Value;
+                        }
+
                         DataTable dtMovies = new DataTable();
 
                         if (image == true || rate == true || link == true || year == true || duration == true || 
@@ -60,7 +94,7 @@ namespace iMovie
                             string logName = "iMovie Update Log [" + Helper.GetShortDateTimeString().Replace(":", "-") + "].txt";
                             iMovieBase.log.Path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), logName);
 
-                            dtMovies = Movie_SP.GetList(true);
+                            dtMovies = Movie_SP.GetList(true, fromDate, toDate);
                             Movie[] movieList = Movie.FetchAllMovie(dtMovies);
                             prgUpdate.Maximum = movieList.Length;
 
@@ -150,6 +184,9 @@ namespace iMovie
                                                     BannedIP = 0;
                                                 }
                                             }
+
+                                            RegistryManager.WriteValue(Helper.GetShortDateTimeString(m.AddDate), 
+                                                Messages.RootKey, Messages.SubKeyLastToArchiveDateTime);
                                         }
                                         else
                                         {

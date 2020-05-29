@@ -993,7 +993,7 @@ namespace iMovie
             }
         }
 
-        public static DataTable GetList(bool newestFirst)
+        public static DataTable GetList(bool newestFirst, DateTime? fromDate=null, DateTime? toDate=null)
         {
             try
             { 
@@ -1008,7 +1008,25 @@ namespace iMovie
                     newFirst = "Movie.AddDate desc,";
                 }
 
+                string dateRange = string.Empty;
+
+                if (fromDate != null)
+                {
+                    dateRange += " and Movie.AddDate >= '" + Helper.GetShortDateTimeString(fromDate.Value) + "'";
+                }
+
+                if (toDate != null)
+                {
+                    dateRange += " and Movie.AddDate <= '" + Helper.GetShortDateTimeString(toDate.Value) + "'";
+                }
+
+                if (toDate != null && fromDate != null && fromDate > toDate)
+                {
+                    throw new Exception(Messages.InvalidArchiveDateRange);
+                }
+
                 finalQuery = finalQuery.Replace("@NewestFirst", newFirst);
+                finalQuery = finalQuery.Replace("@ArchiveDateRange", dateRange);
 
                 dtMovies = AccessDatabase.Select(finalQuery);
 

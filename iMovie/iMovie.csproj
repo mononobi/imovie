@@ -6918,6 +6918,7 @@
     <Content Include="App_Data\Images\Person\Zoya Akhtar.jpg" />
     <Content Include="App_Data\Images\Person\Óskar Thór Axelsson.jpg" />
     <Content Include="iMovie.ico" />
+    <Content Include="Scripts\Monitoring.sql" />
   </ItemGroup>
   <ItemGroup>
     <COMReference Include="stdole">

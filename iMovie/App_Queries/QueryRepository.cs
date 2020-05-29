@@ -447,6 +447,7 @@ namespace iMovie
         from Movie
         left join FavoriteMovie
         on FavoriteMovie.MovieID=Movie.MovieID
+        where 1=1 @ArchiveDateRange
         order by @NewestFirst Movie.MovieName asc, Movie.ProductYear asc";
 
         public const string Movie_Insert =
