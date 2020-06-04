@@ -116,7 +116,7 @@ namespace iMovie
 
                         foreach (Form frm in Application.OpenForms)
                         {
-                            if (frm is frmMovieList)
+                            if (frm is frmMovieList && !frm.GetType().IsSubclassOf(typeof(frmMovieList)))
                             {
                                 frm.WindowState = FormWindowState.Normal;
                                 frm.Focus();
