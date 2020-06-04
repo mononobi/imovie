@@ -79,7 +79,9 @@ namespace iMovie
         frmGetURL = 19,
         frmCopyRequestList = 20,
         frmReportConsole = 21,
-        frmShowReport = 22
+        frmShowReport = 22,
+        frmDuplicateMovieList = 23,
+        frmOfflineMovieList = 24
     }
 
     public class Enums

@@ -126,6 +126,34 @@ namespace iMovie
 
                         return false;
 
+                    case enForms.frmDuplicateMovieList:
+
+                        foreach (Form frm in Application.OpenForms)
+                        {
+                            if (frm is frmDuplicateMovieList)
+                            {
+                                frm.WindowState = FormWindowState.Normal;
+                                frm.Focus();
+                                return true;
+                            }
+                        }
+
+                        return false;
+
+                    case enForms.frmOfflineMovieList:
+
+                        foreach (Form frm in Application.OpenForms)
+                        {
+                            if (frm is frmOfflineMovieList)
+                            {
+                                frm.WindowState = FormWindowState.Normal;
+                                frm.Focus();
+                                return true;
+                            }
+                        }
+
+                        return false;
+
                     case enForms.frmAdvancedSuggest:
 
                         foreach (Form frm in Application.OpenForms)

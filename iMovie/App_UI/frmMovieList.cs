@@ -12,10 +12,14 @@ namespace iMovie
     {
         private DataTable dataSource = new DataTable();
 
+        public frmMovieList()
+        {
+            InitializeComponent();
+        }
+
         public frmMovieList(DataTable dtMovies, string text = "Movie List")
         {
             InitializeComponent();
-
             this.dataSource = dtMovies;
             this.Text = text;
             Initialize();

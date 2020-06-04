@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data;
-using System.Drawing;
-using System.Text;
 using System.Windows.Forms;
 using System.Threading;
 
@@ -424,7 +420,6 @@ namespace iMovie
                 if (FormManager.IsFormOpen(enForms.frmMovieList, null) == false)
                 {
                     frmMovieList movieTemp = new frmMovieList(dtAllMovie);
-
                     movieTemp.Show();
                 }
                 else
@@ -451,19 +446,19 @@ namespace iMovie
             {
                 if (dtDuplicate.Rows.Count > 1)
                 {
-                    if (FormManager.IsFormOpen(enForms.frmMovieList, null) == false)
+                    if (FormManager.IsFormOpen(enForms.frmDuplicateMovieList, null) == false)
                     {
-                        frmMovieList movieList = new frmMovieList(dtDuplicate);
+                        frmDuplicateMovieList movieList = new frmDuplicateMovieList(dtDuplicate);
                         movieList.Show();
                     }
                     else
                     {
                         foreach (Form frm in Application.OpenForms)
                         {
-                            if (frm is frmMovieList)
+                            if (frm is frmDuplicateMovieList)
                             {
-                                (frm as frmMovieList).TextBoxFocus = false;
-                                (frm as frmMovieList).DataSource = dtDuplicate;
+                                (frm as frmDuplicateMovieList).TextBoxFocus = false;
+                                (frm as frmDuplicateMovieList).DataSource = dtDuplicate;
                                 break;
                             }
                         }
@@ -545,20 +540,19 @@ namespace iMovie
                 DataTable dtAllMovie = new DataTable();
                 dtAllMovie = Movie_SP.GetOfflineList();
 
-                if (FormManager.IsFormOpen(enForms.frmMovieList, null) == false)
+                if (FormManager.IsFormOpen(enForms.frmOfflineMovieList, null) == false)
                 {
-                    frmMovieList movieTemp = new frmMovieList(dtAllMovie, "Offline Movie List");
+                    frmOfflineMovieList movieTemp = new frmOfflineMovieList(dtAllMovie);
                     movieTemp.Show();
                 }
                 else
                 {
                     foreach (Form frm in Application.OpenForms)
                     {
-                        if (frm is frmMovieList)
+                        if (frm is frmOfflineMovieList)
                         {
-                            frmMovieList availableForm = (frm as frmMovieList);
+                            frmOfflineMovieList availableForm = (frm as frmOfflineMovieList);
                             availableForm.DataSource = dtAllMovie;
-                            availableForm.Text = "Offline Movie List";
                             break;
                         }
                     }
