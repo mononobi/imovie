@@ -20,7 +20,7 @@ namespace iMovie
             "brip", "dvdrip", "hdrip", "brrip", "x264", "hdtvrip", "xvid", "divx", "720p", "1080p", 
             "bluray", "480p", "360p", "directors cut", "director cut", "extended cut", "yify", "isohunt",
             "maxspeed", "kickasstorrents", "extratorrent", "extended", "theatrical cut", "unrated cut", 
-            "unrated", "hdtv", "m-hd", "theatrical edition", "theatrical-edition" };
+            "unrated", "hdtv", "m-hd", "theatrical edition", "theatrical-edition", "theatrical" };
 
         public static string[] GetExtraCharacters()
         {

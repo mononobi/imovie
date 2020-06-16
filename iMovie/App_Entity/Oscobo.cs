@@ -87,7 +87,7 @@ namespace iMovie
         /// </summary>
         private bool DoSearch(Regex pattern, int limit = 1) 
         {
-            limit = Math.Min(limit, 5);
+            limit = Math.Min(limit, 10);
             HtmlNodeCollection nodes = this.GetMultiNodes(Oscobo.SearchResultXPath);
             if (nodes != null && nodes.Count > 0)
             {

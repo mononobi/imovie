@@ -1445,7 +1445,7 @@ namespace iMovie
                 }
 
                 Oscobo searchProvider = new Oscobo();
-                return searchProvider.Search(searchQuery, Movie_SP.MoviePagePattern, 3);
+                return searchProvider.Search(searchQuery, Movie_SP.MoviePagePattern, 8);
             }
             else
             {
