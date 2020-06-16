@@ -4,9 +4,10 @@ iMovie is a personal movie collection manager, which can scan your computer for 
 files and download movie details from internet.
 
 # Important
-this repository contains an old version of the app that backs to 2013, and it's no longer maintained by me, 
-I'm working on a new version of this app in a new repository, the new app UI will be 
-javascript based to be able to work on both linux and windows.
+this repository contains an old version of the app that backs to 2013, and is no longer maintained by me.
+I only fix the online update part of this app whenever online update needs modifications to continue working.
+I'm working on a new version of this app in a new repository. the new app UI will be 
+PyQt5 based to be able to work on all platforms (linux, windows and ...).
 
 # Features
 * it can scan your computer's hard disks for movie files, identify the movies automatically, and download all basic details about each       movie from internet, and creates a local database of your movies collection.
