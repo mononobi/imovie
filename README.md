@@ -10,7 +10,7 @@ I'm working on a new version of this app in a new repository. the new app UI wil
 Javascript based to be able to work on all platforms (linux, windows, web and mobile).
 
 # Features
-* it can scan your computer's hard disks for movie files, identify the movies automatically, and download all basic details about each       movie from internet, and creates a local database of your movies collection.
+* it can scan your computer's hard disks for movie files, identify the movies automatically, and download all basic details about each       movie from internet, and create a local database of your movies collection.
 
 * open the folder of the movie you desire, directly from the application. you no more need to waste time by 
   searching your computer for movies. iMovie lists all your movies at one place. you can add as many folders as you like, and iMovie is     able to look for movie files inside those folders. all the basic details about the movie will be downloaded and displayed (such as         director(s), actors, plot, IMDB rating, genres, etc). The details are stored offline so that you don't need to connect to internet         everytime.
